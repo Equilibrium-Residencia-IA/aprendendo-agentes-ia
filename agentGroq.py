@@ -1,4 +1,4 @@
-import openai
+import groq
 import os
 from dotenv import load_dotenv
 
@@ -9,12 +9,12 @@ load_dotenv()
 
 console = Console()
 
-api_key: str | None = os.getenv("NEURALAKE_API_KEY")
+api_key: str | None = os.getenv("GROQ_AI_KEY")
 
 if api_key is None:
     print('API NÃO CONFIGURADA')
 
-client: openai.OpenAI = openai.OpenAI(api_key=api_key, base_url="https://api.neuralake.cloud/v1")
+client: groq.Groq = groq.Groq(api_key=api_key)
 
 
 historico_mensagens = []
@@ -28,7 +28,7 @@ while True:
                     "content": user_input
                 })
     completion = client.chat.completions.create(
-        model="text",
+        model="openai/gpt-oss-20b",
         messages=historico_mensagens,
         temperature=0.6,
         max_completion_tokens=1024,
