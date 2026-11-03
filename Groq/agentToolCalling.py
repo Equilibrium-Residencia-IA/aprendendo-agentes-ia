@@ -2,6 +2,7 @@
 # IMPORTS
 
 from datetime import datetime
+import json
 
 import groq
 import os
@@ -24,87 +25,155 @@ if api_key is None:
 
 client: groq.Groq = groq.Groq(api_key=api_key)
 
-historico_mensagens = []
 
 # DEFINIÇÃO DAS TOOLS DISPONÍVEIS:
 
 tools: list[ChatCompletionToolParam] = [
     {
+        # TYPE is always "function"
         "type": "function",
         "function": {
+            # NAME is the name of the function on python
             "name": "getTimeNow",
+
+            # DESCRIPTION is what the tool does
             "description": "Retrieves the current time at the user location",
+
+            # PARAMETERS
             "parameters": {
                 "type": "object",
                 "properties": {},
                 "required": [],
                 "additionalProperties": False,
             },
+
+            # STRICT is for validating tool parameters and type-safe function calls
         },
     }
 ]
-    
 
 
 def getTimeNow():
     timeNow = datetime.now()
     return timeNow.strftime("%H:%M")
 
-# INTERAÇÃO COM O USUÁRIO
 
-user_input: str = input('Input: ')
+# MAPA ENTRE O NOME DA TOOL E A FUNÇÃO PYTHON QUE SERÁ EXECUTADA
 
-if (user_input.strip() == ''):
-    raise Exception("Insira uma mensagem válida.")
+tool_functions = {
+    "getTimeNow": getTimeNow,
+}
 
-historico_mensagens.append({
-    "role": "user",
-    "content": user_input
-})
+# INICIANDO O AGENTE
 
-# CHAMADA À API
+print('''
+==========================
+        RIA AGENT
+==========================
+''')
 
-completion = client.chat.completions.create(
+historico_mensagens = []
 
-    # HISTÓRICO DE MENSAGENS (substitui o prompt e serve como memória):
+# LOOP AGENTICO
 
-    messages=historico_mensagens,
+while True:
+    # INTERAÇÃO COM O USUÁRIO
 
-    # CONFIGS DO MODELO:
+    user_input: str = input('Input: ')
 
-    model="openai/gpt-oss-120b",
-    reasoning_effort="medium",
-    temperature=0.6,
-    max_completion_tokens=1024,
-    top_p=0.8,
+    if user_input.strip() == '':
+        print('Saindo da interação com o RIA')
+        break
 
-    # TOOLS:
+    historico_mensagens.append({
+        "role": "user",
+        "content": user_input,
+    })
 
-    tools=tools,
-    tool_choice="auto",
+    # CHAMADA À API
 
-)
+    while True:
+        completion = client.chat.completions.create(
 
-# RETORNO E FORMATAÇÃO
+            # HISTÓRICO DE MENSAGENS (substitui o prompt e serve como memória):
 
-ag_response: str = completion.choices[0].message.content or ""
+            messages=historico_mensagens,
 
+            # CONFIGS DO MODELO:
 
-markdown = Markdown(ag_response)
-console.print(markdown)
-print('\n')
+            model="openai/gpt-oss-120b",
+            reasoning_effort="medium",
+            temperature=0.6,
+            max_completion_tokens=1024,
+            top_p=0.8,
 
-# PRINT DO TOKEN_USAGE 
+            # TOOLS:
 
-if completion.usage is not None:
-    print(
-        f"Tokens: {completion.usage.prompt_tokens} usados no prompt, "
-        f"{completion.usage.completion_tokens} na resposta, "
-        f"{completion.usage.total_tokens} no total"
-    )
-print(f'Finish Reason: {completion.choices[0].finish_reason}')
-print(f'Tool Calls: {completion.choices[0].message.tool_calls}')
+            tools=tools,
+            tool_choice="auto",
+        )
 
-# APPEND NO HISTÓRICO DE MENSAGENS (Memória do agente)
+        message = completion.choices[0].message
 
-historico_mensagens.append({"role": "assistant", "content": ag_response})
+        # RETORNO DA TOOL
+
+        if not message.tool_calls:
+            # RETORNO E FORMATAÇÃO
+
+            ag_response: str = message.content or ""
+            historico_mensagens.append({
+                "role": "assistant",
+                "content": ag_response,
+            })
+
+            console.print(Markdown(ag_response))
+            print('\n')
+
+            # PRINT DO TOKEN_USAGE
+
+            if completion.usage is not None:
+                print(
+                    f"Tokens: {completion.usage.prompt_tokens} usados no prompt, "
+                    f"{completion.usage.completion_tokens} na resposta, "
+                    f"{completion.usage.total_tokens} no total"
+                )
+            break
+
+        # O modelo pode solicitar várias tools em uma resposta.
+        # Cada resultado é adicionado ao histórico antes da próxima chamada.
+
+        # APPEND DA SOLICITAÇÃO DE TOOL NO HISTÓRICO
+
+        historico_mensagens.append(message.model_dump(exclude_none=True))
+
+        for tool_call in message.tool_calls:
+            # IDENTIFICAÇÃO DA TOOL SOLICITADA
+
+            function_name = tool_call.function.name
+            function = tool_functions.get(function_name)
+
+            if function is None:
+                raise ValueError(f"Tool desconhecida: {function_name}")
+
+            # LEITURA E VALIDAÇÃO DOS ARGUMENTOS DA TOOL
+
+            try:
+                arguments = json.loads(tool_call.function.arguments or "{}")
+            except json.JSONDecodeError as error:
+                raise ValueError(
+                    f"Argumentos inválidos para a tool {function_name}"
+                ) from error
+
+            if not isinstance(arguments, dict) or arguments:
+                raise ValueError(
+                    f"A tool {function_name} não aceita argumentos"
+                )
+
+            # EXECUÇÃO DA TOOL E APPEND DO RESULTADO NO HISTÓRICO
+
+            historico_mensagens.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "name": function_name,
+                "content": function(),
+            })
