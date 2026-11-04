@@ -1,2 +1,4 @@
 groq==1.7.0
 openai
+python-dotenv
+rich

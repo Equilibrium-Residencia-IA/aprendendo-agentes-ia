@@ -21,7 +21,7 @@ console = Console()
 api_key: str | None = os.getenv("GROQ_API_KEY")
 
 if api_key is None:
-    print('API NÃO CONFIGURADA')
+    raise RuntimeError("A variável de ambiente GROQ_API_KEY não está configurada.")
 
 client: groq.Groq = groq.Groq(api_key=api_key)
 
@@ -49,19 +49,83 @@ tools: list[ChatCompletionToolParam] = [
 
             # STRICT is for validating tool parameters and type-safe function calls
         },
+    },
+    {
+        # TYPE is always "function"
+        "type": "function",
+        "function": {
+            # NAME is the name of the function on python
+            "name": "askWithMultipleChoice",
+
+            # DESCRIPTION is what the tool does
+            "description": "Ask a question, with some choices to the user to choose, the user can also write his own answer",
+
+            # PARAMETERS
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {
+                        "type": "string",
+                        "description": "The question that you want to be answered by the user",
+                    },
+                    "choices": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                        "description": "Answers options list",
+                    },
+                },
+                "required": ["question", "choices"],
+                "additionalProperties": False,
+            },
+
+            # STRICT is for validating tool parameters and type-safe function calls
+            "strict": True,
+        },
     }
 ]
 
 
-def getTimeNow():
-    timeNow = datetime.now()
-    return timeNow.strftime("%H:%M")
+def getTimeNow() -> str:
+    time_now = datetime.now()
+    return time_now.strftime("%H:%M")
+
+def askWithMultipleChoice(question: str, choices: list[str]) -> str:
+    print(f"Pergunta: {question}")
+    print("---------------------")
+    print("Selecione a resposta:")
+    for i, choice in enumerate(choices):
+        print(f"{i}) {choice}")
+    print("---------------------")
+
+    answer = input("> ")
+
+    try:
+        choice_index = int(answer)
+    except ValueError:
+        return (
+            f"Pergunta recebida pelo usuário: {question}; "
+            f"Resposta do usuário: {answer}"
+        )
+
+    if 0 <= choice_index < len(choices):
+        return (
+            f"Pergunta recebida pelo usuário: {question}; "
+            f"Resposta do usuário: {choices[choice_index]}"
+        )
+
+    return (
+        f"Pergunta recebida pelo usuário: {question}; "
+        f"Resposta do usuário: {answer}"
+    )
 
 
 # MAPA ENTRE O NOME DA TOOL E A FUNÇÃO PYTHON QUE SERÁ EXECUTADA
 
 tool_functions = {
     "getTimeNow": getTimeNow,
+    "askWithMultipleChoice": askWithMultipleChoice,
 }
 
 # INICIANDO O AGENTE
@@ -73,6 +137,9 @@ print('''
 ''')
 
 historico_mensagens = []
+MAX_ITERATIONS = 6
+MAX_TOOL_CALLS = 10
+MAX_COMPLETION_TOKENS = 1024
 
 # LOOP AGENTICO
 
@@ -92,7 +159,14 @@ while True:
 
     # CHAMADA À API
 
-    while True:
+    iterations = 0
+    tool_calls_count = 0
+    completed = False
+    total_cost = 0
+
+    while iterations < MAX_ITERATIONS:
+        iterations += 1
+        
         completion = client.chat.completions.create(
 
             # HISTÓRICO DE MENSAGENS (substitui o prompt e serve como memória):
@@ -104,7 +178,7 @@ while True:
             model="openai/gpt-oss-120b",
             reasoning_effort="medium",
             temperature=0.6,
-            max_completion_tokens=1024,
+            max_completion_tokens=MAX_COMPLETION_TOKENS,
             top_p=0.8,
 
             # TOOLS:
@@ -114,102 +188,139 @@ while True:
         )
 
         message = completion.choices[0].message
+        finish_reason = completion.choices[0].finish_reason
 
         # RETORNO DA TOOL
 
-        if not message.tool_calls:
-            # RETORNO E FORMATAÇÃO
+        match finish_reason:
+            case "stop":
 
-            ag_response: str = message.content or ""
-            historico_mensagens.append({
-                "role": "assistant",
-                "content": ag_response,
-            })
+                # RETORNO E FORMATAÇÃO
+                completed = True
 
-            console.print(Markdown(ag_response))
-            print('\n')
-
-            # PRINT DO TOKEN_USAGE
-
-            if completion.usage is not None:
-                print(
-                    f"Tokens: {completion.usage.prompt_tokens} usados no prompt, "
-                    f"{completion.usage.completion_tokens} na resposta, "
-                    f"{completion.usage.total_tokens} no total"
-                )
-            break
-
-        # O modelo pode solicitar várias tools em uma resposta.
-        # Cada resultado é adicionado ao histórico antes da próxima chamada.
-
-        # APPEND DA SOLICITAÇÃO DE TOOL NO HISTÓRICO
-
-        historico_mensagens.append(message.model_dump(exclude_none=True))
-
-        for tool_call in message.tool_calls:
-            # IDENTIFICAÇÃO DA TOOL SOLICITADA
-
-            function_name = tool_call.function.name
-            function = tool_functions.get(function_name)
-
-            # Esses ifs e o try catch pegam os erros de TOOL CALLING
-            # E repassam para o agente entender o que ele fez de errado, e pensar no que fazer a partir disso.
-
-            if function is None:
+                ag_response: str = message.content or ""
                 historico_mensagens.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "name": function_name,
-                    "content": f"Tool desconhecida: {function_name}",
+                    "role": "assistant",
+                    "content": ag_response,
                 })
 
-                # Volta ao loop do agente
+                console.print(Markdown(ag_response))
+                print('\n')
 
-                continue
+                # PRINT DO TOKEN_USAGE
 
-                # raise ValueError(f"Tool desconhecida: {function_name}")
+                if completion.usage is not None:
+                    total_cost += completion.usage.total_tokens
+                    print(
+                        f"Tokens: {completion.usage.prompt_tokens} usados no prompt, "
+                        f"{completion.usage.completion_tokens} na resposta, "
+                        f"{total_cost} no total da conversa"
+                    )
+                break
+
+            case "tool_calls":
 
 
-            # LEITURA E VALIDAÇÃO DOS ARGUMENTOS DA TOOL
+                # O modelo pode solicitar várias tools em uma resposta.
+                # Cada resultado é adicionado ao histórico antes da próxima chamada.
 
-            try:
-                arguments = json.loads(tool_call.function.arguments or "{}")
-            except json.JSONDecodeError as error:
-                historico_mensagens.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "name": function_name,
-                    "content": f"Argumentos inválidos para a tool {function_name}",
-                })
+                # APPEND DA SOLICITAÇÃO DE TOOL NO HISTÓRICO
 
-                # Volta ao loop do agente
-                continue
-            
-                #raise ValueError(
-                #    f"Argumentos inválidos para a tool {function_name}"
-                #) from error
+                if not message.tool_calls:
+                    break
 
-            if not isinstance(arguments, dict) or arguments:
-                historico_mensagens.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "name": function_name,
-                    "content": f"A tool {function_name} não aceita argumentos",
-                })
+                requested_tool_calls = len(message.tool_calls)
+                if tool_calls_count + requested_tool_calls > MAX_TOOL_CALLS:
+                    print('Limite de chamadas de ferramentas atingido')
+                    break
 
-                # Volta ao loop do agente
+                historico_mensagens.append(message.model_dump(exclude_none=True))
+                tool_calls_count += requested_tool_calls
 
-                continue
+                for tool_call in message.tool_calls:
 
-                # raise ValueError(
-                #     f"A tool {function_name} não aceita argumentos"
-                # )
+                    # IDENTIFICAÇÃO DA TOOL SOLICITADA
 
-            # EXECUÇÃO DA TOOL E APPEND DO RESULTADO NO HISTÓRICO
+                    function_name = tool_call.function.name
+                    function = tool_functions.get(function_name)
 
-            historico_mensagens.append({
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "name": function_name,
-                "content": function(),
-            })
+                    # Esses ifs e o try catch pegam os erros de TOOL CALLING
+                    # E repassam para o agente entender o que ele fez de errado, e pensar no que fazer a partir disso.
+
+                    if function is None:
+                        historico_mensagens.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": function_name,
+                            "content": f"Tool desconhecida: {function_name}",
+                        })
+
+                        # Volta ao loop do agente
+
+                        continue
+
+                        # raise ValueError(f"Tool desconhecida: {function_name}")
+
+
+                    # LEITURA E VALIDAÇÃO DOS ARGUMENTOS DA TOOL
+
+                    try:
+                        arguments = json.loads(tool_call.function.arguments or "{}")
+                    except json.JSONDecodeError:
+                        historico_mensagens.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": function_name,
+                            "content": f"Argumentos inválidos para a tool {function_name}",
+                        })
+
+                        # Volta ao loop do agente
+                        continue
+
+                        #raise ValueError(
+                        #    f"Argumentos inválidos para a tool {function_name}"
+                        #) from error
+
+                    if not isinstance(arguments, dict):
+                        historico_mensagens.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": function_name,
+                            "content": f"Os argumentos da tool {function_name} devem ser um objeto JSON",
+                        })
+
+                        # Volta ao loop do agente
+
+                        continue
+
+                    try:
+                        result = function(**arguments)
+                    except (TypeError, ValueError) as error:
+                        historico_mensagens.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": function_name,
+                            "content": f"Erro ao executar a tool {function_name}: {error}",
+                        })
+                        continue
+
+                    # EXECUÇÃO DA TOOL E APPEND DO RESULTADO NO HISTÓRICO
+
+                    historico_mensagens.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "name": function_name,
+                        "content": result,
+                    })
+            case "length":
+                print("O agente atingiu o limite de tokens.")
+                break
+            case "content_filter":
+                print("A resposta foi bloqueada pelo filtro de conteúdo.")
+                break
+            case _:
+                print(f"Execução encerrada: {finish_reason}")
+                break
+
+    if not completed and iterations >= MAX_ITERATIONS:
+        print("Não consegui concluir dentro do limite de etapas.")
