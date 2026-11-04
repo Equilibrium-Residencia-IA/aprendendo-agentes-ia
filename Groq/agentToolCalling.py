@@ -152,22 +152,58 @@ while True:
             function_name = tool_call.function.name
             function = tool_functions.get(function_name)
 
+            # Esses ifs e o try catch pegam os erros de TOOL CALLING
+            # E repassam para o agente entender o que ele fez de errado, e pensar no que fazer a partir disso.
+
             if function is None:
-                raise ValueError(f"Tool desconhecida: {function_name}")
+                historico_mensagens.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": function_name,
+                    "content": f"Tool desconhecida: {function_name}",
+                })
+
+                # Volta ao loop do agente
+
+                continue
+
+                # raise ValueError(f"Tool desconhecida: {function_name}")
+
 
             # LEITURA E VALIDAÇÃO DOS ARGUMENTOS DA TOOL
 
             try:
                 arguments = json.loads(tool_call.function.arguments or "{}")
             except json.JSONDecodeError as error:
-                raise ValueError(
-                    f"Argumentos inválidos para a tool {function_name}"
-                ) from error
+                historico_mensagens.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": function_name,
+                    "content": f"Argumentos inválidos para a tool {function_name}",
+                })
+
+                # Volta ao loop do agente
+                continue
+            
+                #raise ValueError(
+                #    f"Argumentos inválidos para a tool {function_name}"
+                #) from error
 
             if not isinstance(arguments, dict) or arguments:
-                raise ValueError(
-                    f"A tool {function_name} não aceita argumentos"
-                )
+                historico_mensagens.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": function_name,
+                    "content": f"A tool {function_name} não aceita argumentos",
+                })
+
+                # Volta ao loop do agente
+
+                continue
+
+                # raise ValueError(
+                #     f"A tool {function_name} não aceita argumentos"
+                # )
 
             # EXECUÇÃO DA TOOL E APPEND DO RESULTADO NO HISTÓRICO
 
