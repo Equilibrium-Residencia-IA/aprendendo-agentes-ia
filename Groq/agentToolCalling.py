@@ -132,14 +132,14 @@ tool_functions = {
 
 print('''
 ==========================
-        RIA AGENT
+        R・IA AGENT
 ==========================
 ''')
 
 historico_mensagens = []
 MAX_ITERATIONS = 6
 MAX_TOOL_CALLS = 10
-MAX_COMPLETION_TOKENS = 1024
+MAX_COMPLETION_TOKENS = 4096
 
 # LOOP AGENTICO
 
@@ -152,6 +152,7 @@ while True:
         print('Saindo da interação com o RIA')
         break
 
+    turn_start_index = len(historico_mensagens)
     historico_mensagens.append({
         "role": "user",
         "content": user_input,
@@ -321,6 +322,11 @@ while True:
             case _:
                 print(f"Execução encerrada: {finish_reason}")
                 break
+
+    if not completed:
+        # Não reutiliza uma solicitação que terminou no meio da geração.
+        # Isso evita que o próximo turno herde tool calls/resultados incompletos.
+        del historico_mensagens[turn_start_index:]
 
     if not completed and iterations >= MAX_ITERATIONS:
         print("Não consegui concluir dentro do limite de etapas.")
