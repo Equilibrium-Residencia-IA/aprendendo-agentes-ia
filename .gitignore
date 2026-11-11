@@ -4,3 +4,6 @@ __pycache__/
 .mypy_cache/
 memoria.json
 chroma_db/
+
+# Diário de Emoções (04_diario_emocoes): estado em disco
+04_diario_emocoes/state/
