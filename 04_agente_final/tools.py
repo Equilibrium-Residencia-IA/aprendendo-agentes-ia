@@ -1,129 +1,132 @@
-"""Tools do A1: registrar_momento (escreve) e buscar_memoria (lê).
+"""Tools do agente de suporte: políticas (RAG), pedidos, chamados e memória.
 
-Regras de design:
-- o LLM descreve o acontecimento; a emoção quem decide é a RN, dentro de registrar_momento;
-- registrar_momento NÃO devolve as emoções detectadas: o A1 deve responder ao que o
-  usuário disse, não anunciar o palpite do classificador como se fosse um diagnóstico;
-- buscar_memoria mostra as emoções de entradas passadas, marcadas como classificação
-  automática, porque ali elas são contexto histórico;
-- erros de validação voltam como texto, para o LLM corrigir os argumentos e tentar de novo.
+O `user_id` nunca é argumento escolhido pelo modelo: vem do estado do grafo
+(`InjectedState`), então um cliente não consegue consultar pedidos de outro.
 """
 
-from datetime import datetime
-from uuid import uuid4
+from typing import Annotated
 
-import chromadb
 from langchain_core.tools import tool
+from langgraph.prebuilt import InjectedState
+from langgraph.types import interrupt
 
-import armazenamento
-from classificador import detectar_emocoes
-from schema import Categoria, Entrada
+import knowledge
+import memory
+import orders
 
-colecao: chromadb.Collection | None = None
-
-
-def obter_colecao() -> chromadb.Collection:
-    """Abre a coleção no primeiro uso. Os testes podem atribuir `tools.colecao` direto."""
-    global colecao
-    if colecao is None:
-        colecao = armazenamento.abrir_colecao()
-    return colecao
+UserId = Annotated[str, InjectedState("user_id")]
 
 
-def _agora() -> datetime:
-    return datetime.now().replace(microsecond=0)
-
-
-def _normalizar_data(texto: str) -> datetime:
-    """Aceita ISO com ou sem hora/fuso e devolve datetime local sem fuso."""
-    try:
-        data = datetime.fromisoformat(texto)
-    except ValueError as erro:
-        raise ValueError(
-            f"Data inválida: {texto!r}. Use ISO 8601, por exemplo 2026-11-10T18:30:00."
-        ) from erro
-    if data.tzinfo is not None:
-        data = data.astimezone().replace(tzinfo=None)
-    return data
+def _format_order(order: dict) -> str:
+    lines = [
+        f"Pedido {order['id']}: {', '.join(order['items'])}",
+        f"- status: {order['status']}",
+        f"- total: R$ {order['total']:.2f}",
+        f"- frete: {order['shipping']} (região {order['region']})",
+        f"- feito há {order['ordered_days_ago']} dia(s)",
+    ]
+    if order.get("delivered_days_ago") is not None:
+        lines.append(f"- entregue há {order['delivered_days_ago']} dia(s)")
+    if order.get("tracking"):
+        lines.append(f"- rastreio: {order['tracking']}")
+    return "\n".join(lines)
 
 
 @tool
-def registrar_momento(
-    resumo: str,
-    categoria: Categoria,
-    envolve_conflito: bool,
-    ocorrido_em: str,
-    trecho_original: str,
-) -> str:
-    """Registra no diário um momento que o usuário contou (um acontecimento e como ele se sentiu).
+def search_docs(query: str) -> str:
+    """Busca nas políticas da loja (devolução, reembolso, frete, entrega e prazos).
 
-    Use quando o usuário relatar algo que viveu, não em conversa casual.
-    - resumo: 1 ou 2 frases neutras na terceira pessoa, sem nomes de terceiros.
-    - categoria: o contexto do acontecimento (não a emoção).
-    - envolve_conflito: true se houve discussão, tensão ou desentendimento.
-    - ocorrido_em: quando aconteceu, em ISO 8601 sem fuso (ex.: 2026-11-10T18:30:00).
-      Resolva "ontem", "hoje de manhã" etc. a partir da data atual informada.
-    - trecho_original: as palavras do próprio usuário sobre o momento, sem alterar.
-    Não inclua emoções: elas são identificadas automaticamente.
+    Use para qualquer pergunta sobre regras. Cada trecho vem com a fonte entre colchetes
+    ([arquivo#trecho]); cite-a exatamente assim na resposta.
     """
-    try:
-        ocorrido = _normalizar_data(ocorrido_em)
-        if ocorrido > _agora():
-            raise ValueError(f"ocorrido_em está no futuro ({ocorrido_em}). Confira a data atual.")
-        entrada: Entrada = {
-            "id": str(uuid4()),
-            "registrado_em": _agora().isoformat(),
-            "ocorrido_em": ocorrido.isoformat(),
-            "resumo": resumo.strip(),
-            "trecho_original": trecho_original.strip(),
-            "categoria": categoria,
-            "envolve_conflito": envolve_conflito,
-            "emocoes": detectar_emocoes(trecho_original),
-        }
-        armazenamento.gravar(obter_colecao(), entrada)
-    except ValueError as erro:
-        return f"Erro: {erro} Nada foi registrado; corrija os argumentos e tente de novo."
-    return "Momento registrado no diário."
+    hits = knowledge.search_docs(query)
+    if not hits:
+        return "Nada encontrado nas políticas da loja para essa pergunta."
+    return "\n\n".join(f"[{chunk_id}] {text}" for chunk_id, _score, text in hits)
 
 
 @tool
-def buscar_memoria(
-    consulta: str,
-    desde: str | None = None,
-    ate: str | None = None,
-    categoria: Categoria | None = None,
-) -> str:
-    """Busca no diário momentos passados do usuário parecidos com a consulta.
+def get_order_status(order_id: str, user_id: UserId) -> str:
+    """Status e detalhes de um pedido do cliente atual, pelo número (ex.: A-1001)."""
+    order = orders.get_order(user_id, order_id)
+    return _format_order(order) if order else f"Pedido {order_id} não encontrado para este cliente."
 
-    Use para lembrar de situações anteriores ("já me senti assim antes?", "como foi a semana
-    passada?") ou quando o contexto do passado ajudar a responder.
-    - consulta: o assunto ou situação, em linguagem natural.
-    - desde / ate: limites opcionais de data em ISO 8601 (filtram pelo dia em que ocorreu).
-    - categoria: filtro opcional.
+
+@tool
+def list_my_orders(user_id: UserId) -> str:
+    """Lista os pedidos do cliente atual, com o status de cada um."""
+    found = orders.list_orders(user_id)
+    if not found:
+        return "Este cliente não tem pedidos."
+    return "\n".join(
+        f"- {o['id']}: {', '.join(o['items'])} ({o['status']})" for o in found
+    )
+
+
+@tool
+def check_return_eligibility(order_id: str, user_id: UserId, defect: bool = False) -> str:
+    """Confere só o PRAZO de devolução de um pedido do cliente atual.
+
+    O prazo conta a partir do recebimento: 7 dias corridos em geral, 90 dias se o produto
+    tem defeito (`defect=True`). Não avalia as condições do produto (embalagem, uso,
+    personalização): para isso, consulte também search_docs.
     """
-    try:
-        achados = armazenamento.buscar(
-            obter_colecao(),
-            consulta,
-            desde=_normalizar_data(desde).isoformat() if desde else None,
-            ate=_normalizar_data(ate).isoformat() if ate else None,
-            categoria=categoria,
+    order = orders.get_order(user_id, order_id)
+    if order is None:
+        return f"Pedido {order_id} não encontrado para este cliente."
+    days = order.get("delivered_days_ago")
+    if days is None:
+        return (
+            f"O pedido {order['id']} ainda não foi entregue (status: {order['status']}). "
+            "O prazo de devolução só começa a contar a partir do recebimento."
         )
-    except ValueError as erro:
-        return f"Erro: {erro} Corrija os argumentos e tente de novo."
-    if not achados:
-        return "Nenhum momento relacionado encontrado no diário."
-
-    linhas = []
-    for entrada, score in achados:
-        emocoes = ", ".join(f"{e['rotulo']} ({e['score']:.2f})" for e in entrada["emocoes"])
-        conflito = ", com conflito" if entrada["envolve_conflito"] else ""
-        linhas.append(
-            f"- {entrada['ocorrido_em'][:10]} [{entrada['categoria']}{conflito}] {entrada['resumo']}\n"
-            f"  Emoções (classificação automática, pode errar): {emocoes or 'nenhuma'}"
-            f" | relevância {score:.2f}"
+    window = orders.DEFECT_WINDOW_DAYS if defect else orders.RETURN_WINDOW_DAYS
+    kind = "com defeito" if defect else "por arrependimento"
+    if days <= window:
+        return (
+            f"Dentro do prazo ({kind}): entregue há {days} dia(s), prazo de {window} dias "
+            f"(restam {window - days})."
         )
-    return "\n".join(linhas)
+    return f"Fora do prazo ({kind}): entregue há {days} dia(s), prazo de {window} dias."
 
 
-tools = [registrar_momento, buscar_memoria]
+@tool
+def open_support_ticket(
+    subject: str, description: str, user_id: UserId, order_id: str | None = None
+) -> str:
+    """Abre um chamado para a equipe humana, depois de o cliente confirmar.
+
+    Use só quando o cliente pedir para falar com a equipe ou o problema não for resolvível
+    pelas outras ferramentas. Resuma o caso em `description`.
+    """
+    approved = interrupt({"subject": subject, "description": description, "order_id": order_id})
+    if not approved:
+        return "O cliente não confirmou; nenhum chamado foi aberto."
+    ticket_id = orders.create_ticket(user_id, subject, description, order_id)
+    return f"Chamado {ticket_id} aberto. A equipe responde por e-mail."
+
+
+@tool
+def save_memory(content: str, user_id: UserId) -> str:
+    """Salva um fato durável sobre o cliente (preferência, nome, contexto).
+
+    Não salve dados de pagamento, senhas nem conteúdo de pedidos.
+    """
+    return memory.remember(user_id, content)
+
+
+@tool
+def forget_memory(memory_id: str, user_id: UserId) -> str:
+    """Remove uma memória do cliente pelo id mostrado por save_memory (ex.: 3fa85f64)."""
+    return memory.forget(user_id, memory_id)
+
+
+tools = [
+    search_docs,
+    get_order_status,
+    list_my_orders,
+    check_return_eligibility,
+    open_support_ticket,
+    save_memory,
+    forget_memory,
+]
