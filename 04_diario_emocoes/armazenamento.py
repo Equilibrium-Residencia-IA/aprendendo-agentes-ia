@@ -19,7 +19,10 @@ from schema import CATEGORIAS, Categoria, EmocaoDetectada, Entrada
 STATE_DIR = Path(__file__).with_name("state")
 COLLECTION_NAME = "entradas"
 MODELO_EMBEDDING = "paraphrase-multilingual-MiniLM-L12-v2"  # o mesmo do 03_langgraph
-MIN_SCORE = 0.25  # similaridade mínima; valor inicial, calibrar com exemplos reais
+# Similaridade mínima. Calibrada com `avaliacao.py recuperacao` (10 entradas sintéticas):
+# 0.35 mantém recall 1.00 e rejeita todas as consultas sem relação; 0.40 já perde recall.
+# Reavaliar quando houver entradas reais.
+MIN_SCORE = 0.35
 
 _modelo: SentenceTransformer | None = None
 
