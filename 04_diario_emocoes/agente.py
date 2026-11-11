@@ -7,7 +7,6 @@ longo prazo, das tools. Um futuro crisis guard encaixa como middleware antes da 
 
 import os
 from datetime import datetime
-from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
@@ -15,15 +14,13 @@ from langchain.agents.middleware import ModelRequest, dynamic_prompt
 from langchain_groq import ChatGroq
 from langgraph.checkpoint.memory import InMemorySaver
 
-from armazenamento import STATE_DIR
+from perfil import carregar_perfil
 from tools import tools
 
 load_dotenv()
 
 if not os.getenv("GROQ_API_KEY"):
     raise RuntimeError("A variável de ambiente GROQ_API_KEY não está configurada.")
-
-PERFIL_PATH = STATE_DIR / "perfil.md"  # o "perfil vivo"; ainda sem rotina que o atualize
 
 DIAS = ("segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo")
 
@@ -51,10 +48,7 @@ parecidos, em vez de apresentá-lo como algo anterior.
 
 
 def _perfil() -> str:
-    try:
-        texto = PERFIL_PATH.read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
-        return ""
+    texto = carregar_perfil()
     return f"\n\nO que você já sabe sobre a pessoa:\n{texto}" if texto else ""
 
 

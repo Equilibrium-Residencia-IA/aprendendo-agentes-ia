@@ -2,19 +2,35 @@
 
 from langchain_core.messages import HumanMessage
 
+import tools
 from agente import agente
+from perfil import atualizar_perfil
+
+
+def atualizar_perfil_seguro() -> None:
+    """Atualiza o perfil sem nunca derrubar o chat: falha de rede só adia a atualização."""
+    try:
+        print(f"[perfil] {atualizar_perfil(tools.obter_colecao())}")
+    except Exception as erro:
+        print(f"[perfil] não foi possível atualizar agora ({type(erro).__name__}).")
 
 
 def run_chat() -> None:
     config = {"configurable": {"thread_id": "diario-local"}}
+    # Na abertura também: cobre a sessão anterior que terminou sem passar pelo fechamento.
+    atualizar_perfil_seguro()
     print("Diário de Emoções. Linha vazia ou 'sair' encerra.\n")
-    while True:
-        entrada = input("Você: ").strip()
-        if not entrada or entrada.lower() in {"sair", "exit", "quit"}:
-            print("Até a próxima.")
-            return
-        resultado = agente.invoke({"messages": [HumanMessage(content=entrada)]}, config)
-        print(f"A1: {resultado['messages'][-1].content}\n")
+    try:
+        while True:
+            entrada = input("Você: ").strip()
+            if not entrada or entrada.lower() in {"sair", "exit", "quit"}:
+                break
+            resultado = agente.invoke({"messages": [HumanMessage(content=entrada)]}, config)
+            print(f"A1: {resultado['messages'][-1].content}\n")
+    except (KeyboardInterrupt, EOFError):
+        print()
+    atualizar_perfil_seguro()
+    print("Até a próxima.")
 
 
 if __name__ == "__main__":

@@ -93,6 +93,19 @@ def _montar_entrada(id_: str, resumo: str, meta: dict) -> Entrada:
     }
 
 
+def listar(colecao: chromadb.Collection) -> list[Entrada]:
+    """Todas as entradas, da mais antiga para a mais nova (pelo registro).
+
+    Carrega tudo em memória: serve para um diário pessoal. Se crescer muito, paginar.
+    """
+    dados = colecao.get(include=["documents", "metadatas"])
+    entradas = [
+        _montar_entrada(id_, doc, meta)
+        for id_, doc, meta in zip(dados["ids"], dados["documents"], dados["metadatas"])
+    ]
+    return sorted(entradas, key=lambda e: e["registrado_em"])
+
+
 def _filtro(desde: str | None, ate: str | None, categoria: Categoria | None) -> dict | None:
     condicoes: list[dict] = []
     if desde:
