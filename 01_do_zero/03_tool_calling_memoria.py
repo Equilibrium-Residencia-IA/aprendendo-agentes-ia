@@ -39,7 +39,7 @@ if api_key is None:
 # O cliente encapsula as chamadas HTTP para a API da Groq.
 client: groq.Groq = groq.Groq(api_key=api_key)
 
-# A memória fica ao lado deste script, em Groq/memoria.json.
+# A memória fica ao lado deste script, em 01_do_zero/memoria.json.
 # Assim, ela continua disponível quando o programa for encerrado e aberto novamente.
 MEMORY_FILE = Path(__file__).with_name("memoria.json")
 # Evita enviar uma quantidade ilimitada de memórias ao modelo em uma única pergunta.
