@@ -1,4 +1,8 @@
-groq==1.7.0
+groq>=0.30.0,<1.0.0
+langchain-groq
+langgraph
 openai
 python-dotenv
 rich
+sentence-transformers
+numpy

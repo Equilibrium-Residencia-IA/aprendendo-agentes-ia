@@ -139,7 +139,7 @@ print('''
 historico_mensagens = []
 MAX_ITERATIONS = 6
 MAX_TOOL_CALLS = 10
-MAX_COMPLETION_TOKENS = 4096
+MAX_COMPLETION_TOKENS = 32000
 
 # LOOP AGENTICO
 
@@ -217,6 +217,9 @@ while True:
                         f"{completion.usage.completion_tokens} na resposta, "
                         f"{total_cost} no total da conversa"
                     )
+                    if total_cost > 8000:
+                        historico_mensagens.pop(0)
+                        historico_mensagens.pop(1)
                 break
 
             case "tool_calls":
