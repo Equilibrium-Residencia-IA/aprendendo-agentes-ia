@@ -7,7 +7,7 @@ Projeto de estudo: construir o mesmo tipo de agente (chat, tools, memória, RAG)
 | Etapa | Pasta | O que você aprende |
 |---|---|---|
 | 1. Do zero | [01_do_zero/](01_do_zero/) | SDK da Groq (e OpenAI-compatível) puro: loop de chat, tool calling, validação, memória em JSON |
-| 2. LangChain | `02_langchain/` (a fazer) | Os mesmos conceitos com `ChatGroq`, `@tool`, mensagens e `create_agent` |
+| 2. LangChain | [02_langchain/](02_langchain/) | Os mesmos conceitos com `ChatGroq`, `@tool` e `create_agent` |
 | 3. LangGraph | [03_langgraph/](03_langgraph/) | Agente como grafo: estado, nós, arestas condicionais, checkpointer, store, embeddings e RAG |
 | Extra | [colab/](colab/) | Notebook do workshop |
 
@@ -16,6 +16,11 @@ Projeto de estudo: construir o mesmo tipo de agente (chat, tools, memória, RAG)
 2. `02_tool_calling.py` — loop agêntico, tools com parâmetros, tratamento de erros
 3. `03_tool_calling_memoria.py` — memória persistente (`memoria.json`)
 4. `04_chat_neuralake.py` — mesmo chat usando outro provedor via SDK da OpenAI
+
+### 02_langchain
+1. `01_chat.py` — `ChatGroq` e classes de mensagem no lugar de dicts
+2. `02_tool.py` — `@tool` e `create_agent` (o loop de tools vem pronto)
+3. `03_memoria.py` — histórico entre turnos com checkpointer
 
 ### 03_langgraph
 Cada arquivo evolui o anterior:
