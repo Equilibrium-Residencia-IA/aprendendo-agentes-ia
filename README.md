@@ -67,7 +67,9 @@ A mesma ideia é implementada em três etapas, e uma quarta reúne tudo em um ag
 
 ### 04_agente_final
 
-Agente de atendimento de uma loja fictícia, em chat de terminal (`python 04_agente_final/main.py --user joao`; os clientes de demonstração com pedidos são `joao` e `maria`). O grafo faz `recall` (busca na memória de longo prazo) e depois alterna entre o modelo e as tools, com o histórico guardado em SQLite. A memória por usuário e a base de conhecimento (RAG com limiar de similaridade e citação da fonte) usam o Chroma e os mesmos embeddings do `03_langgraph`. **Esta etapa está em desenvolvimento** e não foi validada aqui.
+Agente de atendimento de uma loja fictícia, em chat de terminal (`python 04_agente_final/main.py --user joao`; os clientes de demonstração com pedidos são `joao` e `maria`). O grafo faz `recall` (busca na memória de longo prazo) e depois alterna entre o modelo e as tools, com o histórico guardado em SQLite. As tools são `search_docs` (RAG com limiar de similaridade e citação da fonte), `get_order_status`, `list_my_orders`, `check_return_eligibility` (prazo de devolução), `open_support_ticket` (só abre o chamado depois de o cliente confirmar no terminal), `save_memory` e `forget_memory`. O `user_id` vem do estado do grafo, não do modelo, então um cliente não consulta pedidos de outro. A memória e a base de conhecimento usam o Chroma e os mesmos embeddings do `03_langgraph`.
+
+**Em desenvolvimento.** As tools foram testadas offline, sem chamar o modelo; a conversa completa com o LLM e o índice de embeddings não foram executados nesta revisão.
 
 ### A pasta `chat/`
 
