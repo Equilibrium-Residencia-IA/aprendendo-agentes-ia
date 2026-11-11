@@ -3,3 +3,4 @@
 __pycache__/
 .mypy_cache/
 memoria.json
+chroma_db/
