@@ -1,6 +1,6 @@
 # Aprendendo a criar agentes de IA
 
-Trilha de estudo que constrói o mesmo tipo de agente de IA (chat, tool calling, memória e RAG) em três níveis de abstração: SDK puro, LangChain e LangGraph.
+Trilha de estudo que constrói o mesmo tipo de agente de IA (chat, tool calling, memória e RAG) em três níveis de abstração (SDK puro, LangChain e LangGraph) e junta tudo em um agente de suporte com memória e RAG.
 
 > **Status: em andamento.** Este é um projeto de estudo que continua sendo evoluído. Não é um produto finalizado.
 
@@ -22,7 +22,7 @@ flowchart LR
     R -.->|trechos relevantes| L
 ```
 
-A mesma ideia é implementada em três etapas:
+A mesma ideia é implementada em três etapas, e uma quarta reúne tudo em um agente de suporte:
 
 1. **`01_do_zero/`**: o loop agêntico escrito à mão com o SDK da Groq (mensagens, tools, validação, memória em arquivo JSON).
 2. **`02_langchain/`**: o mesmo com `ChatGroq`, `@tool` e `create_agent`; o loop de tools vem pronto e a memória usa um checkpointer.
@@ -35,6 +35,7 @@ A mesma ideia é implementada em três etapas:
 | 1. Do zero | [01_do_zero/](01_do_zero/) | SDK da Groq (e OpenAI-compatível) puro: loop de chat, tool calling, validação, memória em JSON |
 | 2. LangChain | [02_langchain/](02_langchain/) | Os mesmos conceitos com `ChatGroq`, `@tool` e `create_agent` |
 | 3. LangGraph | [03_langgraph/](03_langgraph/) | Agente como grafo: estado, nós, arestas condicionais, checkpointer, store, embeddings e RAG |
+| 4. Agente final | [04_agente_final/](04_agente_final/) | Agente de suporte em terminal: grafo, memória de longo prazo e RAG em Chroma, checkpoint em SQLite e pedidos de demonstração (em desenvolvimento) |
 | Extra | [colab/](colab/) | Notebook do workshop |
 | Extra | [chat/](chat/) | Interface de chat em Next.js (ver abaixo) |
 
@@ -60,6 +61,15 @@ A mesma ideia é implementada em três etapas:
 8. `08_busca_semantica.py`: busca semântica no store
 9. `09_documentos.py`: chunking e indexação
 10. `10_rag_basico.py`: RAG básico (documentos em `docs/`)
+11. `11_rag_citacoes.py`: citações das fontes com limiar de similaridade
+12. `12_avaliacao.py`: avaliação da recuperação
+13. `12_rag_persistente.py`: índice Chroma persistente
+
+### 04_agente_final
+
+Agente de atendimento de uma loja fictícia, em chat de terminal (`python 04_agente_final/main.py --user joao`; os clientes de demonstração com pedidos são `joao` e `maria`). O grafo faz `recall` (busca na memória de longo prazo) e depois alterna entre o modelo e as tools, com o histórico guardado em SQLite. As tools são `search_docs` (RAG com limiar de similaridade e citação da fonte), `get_order_status`, `list_my_orders`, `check_return_eligibility` (prazo de devolução), `open_support_ticket` (só abre o chamado depois de o cliente confirmar no terminal), `save_memory` e `forget_memory`. O `user_id` vem do estado do grafo, não do modelo, então um cliente não consulta pedidos de outro. A memória e a base de conhecimento usam o Chroma e os mesmos embeddings do `03_langgraph`.
+
+**Em desenvolvimento.** As tools foram testadas offline, sem chamar o modelo; a conversa completa com o LLM e o índice de embeddings não foram executados nesta revisão.
 
 ### A pasta `chat/`
 
@@ -67,13 +77,13 @@ A mesma ideia é implementada em três etapas:
 
 ## Stack
 
-- Python, com `groq` e `openai` (SDKs), `langchain` / `langchain-groq`, `langgraph`, `sentence-transformers` (embeddings, modelo `paraphrase-multilingual-MiniLM-L12-v2`), `numpy`, `rich`, `python-dotenv`
+- Python, com `groq` e `openai` (SDKs), `langchain` / `langchain-groq`, `langgraph`, `sentence-transformers` (embeddings, modelo `paraphrase-multilingual-MiniLM-L12-v2`), `chromadb`, `langgraph-checkpoint-sqlite`, `numpy`, `rich`, `python-dotenv`
 - Modelos de chat via Groq: `openai/gpt-oss-20b` e `openai/gpt-oss-120b`; um provedor OpenAI-compatível (Neuralake) em `01_do_zero/04_chat_neuralake.py`
 - Next.js, React e TypeScript na pasta `chat/`
 
 ## Meu papel
 
-Projeto de estudo individual. Pelo `git log`, os 15 commits (sem contar o merge de PR) são do autor, João Pedro Panza Mainieri.
+Projeto de estudo individual. Pelo `git log`, os 17 commits (sem contar merges) são do autor, João Pedro Panza Mainieri.
 
 ## Contexto
 
