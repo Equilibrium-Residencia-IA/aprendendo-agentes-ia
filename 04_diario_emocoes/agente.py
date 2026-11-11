@@ -66,7 +66,8 @@ def montar_prompt(request: ModelRequest) -> str:
 
 
 agente = create_agent(
-    model=ChatGroq(model="openai/gpt-oss-120b", temperature=0.6),
+    # max_retries: o plano gratuito do Groq limita tokens por minuto (429); o SDK espera e repete.
+    model=ChatGroq(model="openai/gpt-oss-120b", temperature=0.6, max_retries=6),
     tools=tools,
     middleware=[montar_prompt],
     checkpointer=InMemorySaver(),

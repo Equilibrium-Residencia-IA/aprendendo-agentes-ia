@@ -21,6 +21,11 @@ from schema import Categoria, Entrada
 
 colecao: chromadb.Collection | None = None
 
+# Resumo quase idêntico no mesmo dia é tratado como o mesmo momento. Medido: duplicatas
+# 0.73-0.91, momentos distintos 0.50-0.69. Com 0.80 passam algumas paráfrases soltas
+# (o prompt cobre o resto), mas não se bloqueia um momento legítimo.
+DUPLICATA_SCORE = 0.80
+
 
 def obter_colecao() -> chromadb.Collection:
     """Abre a coleção no primeiro uso. Os testes podem atribuir `tools.colecao` direto."""
@@ -70,6 +75,20 @@ def registrar_momento(
         ocorrido = _normalizar_data(ocorrido_em)
         if ocorrido > _agora():
             raise ValueError(f"ocorrido_em está no futuro ({ocorrido_em}). Confira a data atual.")
+        dia = ocorrido.date().isoformat()
+        parecidas = armazenamento.buscar(
+            obter_colecao(),
+            resumo,
+            top_k=1,
+            desde=f"{dia}T00:00:00",
+            ate=f"{dia}T23:59:59",
+            min_score=DUPLICATA_SCORE,
+        )
+        if parecidas:
+            return (
+                f"Este momento já está no diário ({parecidas[0][0]['resumo']!r}). "
+                "Nada foi registrado; não registre o mesmo momento de novo."
+            )
         entrada: Entrada = {
             "id": str(uuid4()),
             "registrado_em": _agora().isoformat(),
