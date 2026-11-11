@@ -40,8 +40,8 @@ pip install -r requirements.txt
 Crie um `.env` na raiz com as chaves (nomes variam por etapa):
 
 ```
-GROQ_API_KEY=...        # 03_langgraph (langchain-groq)
-GROQ_AI_KEY=...         # 01_do_zero
+GROQ_API_KEY=...        # quase todos os scripts
+GROQ_AI_KEY=...         # só 01_do_zero/01_chat.py
 NEURALAKE_API_KEY=...   # 01_do_zero/04
 ```
 
