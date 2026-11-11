@@ -8,3 +8,4 @@ rich
 sentence-transformers
 numpy
 chromadb
+langgraph-checkpoint-sqlite

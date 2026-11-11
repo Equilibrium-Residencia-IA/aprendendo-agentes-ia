@@ -4,3 +4,6 @@ __pycache__/
 .mypy_cache/
 memoria.json
 chroma_db/
+
+# Agente final (04_agente_final): estado em disco
+04_agente_final/state/
