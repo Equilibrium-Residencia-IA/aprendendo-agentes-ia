@@ -1,0 +1,11 @@
+groq>=0.30.0,<1.0.0
+langchain
+langchain-groq
+langgraph
+openai
+python-dotenv
+rich
+sentence-transformers
+numpy
+chromadb
+langgraph-checkpoint-sqlite
