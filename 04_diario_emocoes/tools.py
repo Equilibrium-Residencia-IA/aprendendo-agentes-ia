@@ -16,6 +16,7 @@ import chromadb
 from langchain_core.tools import tool
 
 import armazenamento
+import fatos
 from classificador import detectar_emocoes
 from schema import Categoria, Entrada
 
@@ -145,4 +146,21 @@ def buscar_memoria(
     return "\n".join(linhas)
 
 
-tools = [registrar_momento, buscar_memoria]
+@tool
+def lembrar_fato(chave: str, valor: str) -> str:
+    """Guarda um fato estável que o usuário contou sobre si, para lembrar em conversas futuras.
+
+    Use para nome, idade, profissão, pessoas próximas e rotinas fixas. NÃO use para
+    acontecimentos ou sentimentos (isso é registrar_momento).
+    - chave: nome curto do fato em minúsculas (ex.: "nome", "idade", "avô").
+    - valor: o fato, como o usuário disse (ex.: "João Pedro").
+    Reusar a mesma chave substitui o valor anterior.
+    """
+    try:
+        fatos.salvar_fato(chave, valor)
+    except ValueError as erro:
+        return f"Erro: {erro} Nada foi guardado."
+    return "Fato guardado."
+
+
+tools = [registrar_momento, buscar_memoria, lembrar_fato]

@@ -14,6 +14,7 @@ from langchain.agents.middleware import ModelRequest, dynamic_prompt
 from langchain_groq import ChatGroq
 from langgraph.checkpoint.memory import InMemorySaver
 
+from fatos import formatar_fatos
 from perfil import carregar_perfil
 from tools import tools
 
@@ -43,13 +44,20 @@ perguntas.
 antes de responder. Não afirme nada sobre o passado sem consultar. Se a busca só trouxer o \
 momento que a pessoa acabou de relatar nesta conversa, diga que ainda não há outros registros \
 parecidos, em vez de apresentá-lo como algo anterior.
+- Quando a pessoa disser algo estável sobre si (nome, idade, profissão, pessoas próximas), \
+guarde com lembrar_fato e confirme de forma natural. Se o nome já estiver nos fatos, use-o; \
+não peça de novo.
 - Se uma ferramenta devolver erro, corrija os argumentos e tente de novo.
 - Registrar o momento é discreto: confirme em uma frase curta, sem burocracia."""
 
 
 def _perfil() -> str:
     texto = carregar_perfil()
-    return f"\n\nO que você já sabe sobre a pessoa:\n{texto}" if texto else ""
+    partes = f"\n\nO que você já sabe sobre a pessoa:\n{texto}" if texto else ""
+    guardados = formatar_fatos()
+    if guardados:
+        partes += f"\n\nFatos que a pessoa te contou (use-os naturalmente):\n{guardados}"
+    return partes
 
 
 @dynamic_prompt
