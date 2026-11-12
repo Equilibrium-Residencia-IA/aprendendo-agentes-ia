@@ -95,10 +95,10 @@ def avaliar_recuperacao() -> None:
             ]
             for consulta, _ in NO_ESCOPO
         }
-        ruido = {
-            consulta: armazenamento.buscar(colecao, consulta, top_k=1, min_score=-1)[0][1]
-            for consulta in FORA_DO_ESCOPO
-        }
+        ruido = {}
+        for consulta in FORA_DO_ESCOPO:
+            resultados = armazenamento.buscar(colecao, consulta, top_k=1, min_score=-1)
+            ruido[consulta] = resultados[0][1] if resultados else 0.0
 
     posicoes = []
     for consulta, esperados in NO_ESCOPO:

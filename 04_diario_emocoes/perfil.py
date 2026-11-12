@@ -55,7 +55,7 @@ def carregar_perfil(pasta: Path = STATE_DIR) -> str:
     caminho, _ = _caminhos(pasta)
     try:
         return caminho.read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
+    except (FileNotFoundError, UnicodeDecodeError):
         return ""
 
 
@@ -77,7 +77,7 @@ def _escrever(caminho: Path, conteudo: str) -> None:
 
 def entradas_novas(colecao: chromadb.Collection, pasta: Path = STATE_DIR) -> list[Entrada]:
     cursor = _cursor(pasta)
-    return [e for e in armazenamento.listar(colecao) if e["registrado_em"] > cursor]
+    return [e for e in armazenamento.listar(colecao) if e["registrado_em"] >= cursor] if cursor else armazenamento.listar(colecao)
 
 
 def _formatar_entradas(entradas: list[Entrada]) -> str:

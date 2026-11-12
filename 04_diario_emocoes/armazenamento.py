@@ -141,13 +141,14 @@ def buscar(
         where=_filtro(desde, ate, categoria),
         include=["documents", "metadatas", "distances"],
     )
+    ids = resultado["ids"][0]
+    docs = resultado["documents"][0]
+    metas = resultado["metadatas"][0]
+    distancias = resultado["distances"][0]
+    if not (len(ids) == len(docs) == len(metas) == len(distancias)):
+        raise RuntimeError(f"Chroma retornou listas de tamanhos inconsistentes: ids={len(ids)}, docs={len(docs)}, metas={len(metas)}, dist={len(distancias)}")
     achados = [
         (_montar_entrada(id_, resumo, meta), 1 - distancia)
-        for id_, resumo, meta, distancia in zip(
-            resultado["ids"][0],
-            resultado["documents"][0],
-            resultado["metadatas"][0],
-            resultado["distances"][0],
-        )
+        for id_, resumo, meta, distancia in zip(ids, docs, metas, distancias)
     ]
     return [(entrada, score) for entrada, score in achados if score >= min_score]
