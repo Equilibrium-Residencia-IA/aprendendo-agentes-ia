@@ -16,6 +16,7 @@ import chromadb
 from langchain_core.tools import tool
 
 import armazenamento
+import conhecimento
 import fatos
 from classificador import detectar_emocoes
 from schema import Categoria, Entrada
@@ -163,4 +164,35 @@ def lembrar_fato(chave: str, valor: str) -> str:
     return "Fato guardado."
 
 
-tools = [registrar_momento, buscar_memoria, lembrar_fato]
+colecao_conhecimento: chromadb.Collection | None = None
+
+
+def obter_colecao_conhecimento() -> chromadb.Collection:
+    """Abre a base de conhecimento no primeiro uso. Os testes podem atribuir direto."""
+    global colecao_conhecimento
+    if colecao_conhecimento is None:
+        colecao_conhecimento = conhecimento.abrir_colecao()
+    return colecao_conhecimento
+
+
+@tool
+def consultar_conhecimento(pergunta: str) -> str:
+    """Consulta fontes científicas e educativas sobre emoções, estresse e bem-estar.
+
+    Use quando a pessoa perguntar algo conceitual ("o que é ansiedade?", "o que ajuda no
+    estresse?", "qual a diferença entre afeto positivo e negativo?") ou quando uma estratégia
+    de enfrentamento embasada ajudar. NÃO use para lembrar do passado da pessoa (isso é
+    buscar_memoria) nem para interpretar o que ela sente: as fontes são gerais, não sobre ela.
+    - pergunta: o conceito ou dúvida, em linguagem natural.
+    """
+    achados = conhecimento.buscar(obter_colecao_conhecimento(), pergunta)
+    if not achados:
+        return "Nenhuma fonte relevante encontrada. Responda sem citar fontes e sem inventar."
+    linhas = [
+        f"- [{meta['titulo']}] {trecho}\n  Limite desta fonte: {meta['limitacao']}"
+        for trecho, meta, _ in achados
+    ]
+    return "\n".join(linhas)
+
+
+tools = [registrar_momento, buscar_memoria, lembrar_fato, consultar_conhecimento]

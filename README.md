@@ -47,10 +47,13 @@ Projeto final: o agente Conversador (A1) de um diário de emoções da Residênc
 6. `main.py` — chat no terminal
 7. `avaliacao.py` — `recuperacao` (sem LLM, calibra o limiar) e `comportamento` (conversas roteirizadas com o LLM)
 8. `perfil.py` — perfil vivo reescrito a partir das entradas novas, com validação
+9. `conhecimento.py` — RAG sobre fontes externas (PDFs em `RESOURCES_RAG/`): extração, chunking, coleção Chroma separada do diário e tool `consultar_conhecimento`
 
 Os dados ficam em `04_diario_emocoes/state/` (Chroma e perfil), só no dispositivo e fora do git. O texto das conversas ainda vai para o LLM remoto.
 
 ```bash
+python 04_diario_emocoes/conhecimento.py indexar         # (re)indexar os PDFs de RESOURCES_RAG
+python 04_diario_emocoes/conhecimento.py buscar "estresse" # testar a recuperação
 python 04_diario_emocoes/main.py                         # conversar
 python 04_diario_emocoes/avaliacao.py recuperacao        # avaliar a busca
 python 04_diario_emocoes/avaliacao.py comportamento      # avaliar o agente (chama o LLM)

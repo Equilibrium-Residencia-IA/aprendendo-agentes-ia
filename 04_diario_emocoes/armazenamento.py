@@ -35,10 +35,10 @@ def embed(textos: list[str]) -> list[list[float]]:
     return _modelo.encode(textos, normalize_embeddings=True).tolist()
 
 
-def abrir_colecao(caminho: Path | None = None) -> chromadb.Collection:
+def abrir_colecao(caminho: Path | None = None, nome: str = COLLECTION_NAME) -> chromadb.Collection:
     """Abre (ou cria) a coleção. `caminho` existe para os testes usarem uma pasta temporária."""
     cliente = chromadb.PersistentClient(path=str(caminho or STATE_DIR / "chroma"))
-    return cliente.get_or_create_collection(COLLECTION_NAME, metadata={"hnsw:space": "cosine"})
+    return cliente.get_or_create_collection(nome, metadata={"hnsw:space": "cosine"})
 
 
 def _timestamp(iso: str) -> float:
