@@ -8,3 +8,6 @@ chroma_db/
 # Diário de Emoções (04_diario_emocoes): estado em disco
 04_diario_emocoes/state/
 04_diario_emocoes/figuras/
+
+# Agente final (04_agente_final): estado em disco
+04_agente_final/state/

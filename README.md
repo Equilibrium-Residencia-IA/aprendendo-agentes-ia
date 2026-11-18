@@ -1,5 +1,7 @@
 # Aprendendo a criar agentes de IA
 
+> Projeto "teste-agente1": testando o agente 1 com uma interface de chat.
+
 Projeto de estudo: construir o mesmo tipo de agente (chat, tools, memória, RAG) em três níveis de abstração, para entender o que cada framework faz por baixo.
 
 ## Trilha
@@ -10,6 +12,8 @@ Projeto de estudo: construir o mesmo tipo de agente (chat, tools, memória, RAG)
 | 2. LangChain | [02_langchain/](02_langchain/) | Os mesmos conceitos com `ChatGroq`, `@tool` e `create_agent` |
 | 3. LangGraph | [03_langgraph/](03_langgraph/) | Agente como grafo: estado, nós, arestas condicionais, checkpointer, store, embeddings e RAG |
 | 4. Projeto final | [04_diario_emocoes/](04_diario_emocoes/) | Diário de Emoções: agente com tools, classificador de emoções, RAG sobre o próprio histórico e perfil vivo |
+| 4. Agente final | [04_agente_final/](04_agente_final/) | Agente de suporte completo: grafo, memória em SQLite, RAG com Chroma, consulta de pedidos |
+| Interface | [chat/](chat/) | Interface de chat em Next.js (agente 1) |
 | Extra | [colab/](colab/) | Notebook do workshop |
 
 ### 01_do_zero
@@ -35,6 +39,9 @@ Cada arquivo evolui o anterior:
 8. `08_busca_semantica.py` — busca semântica no store
 9. `09_documentos.py` — chunking e indexação
 10. `10_rag_basico.py` — RAG completo (documentos em `docs/`)
+11. `11_rag_citacoes.py` — citações com limiar de similaridade
+12. `12_avaliacao.py` — avaliação da recuperação
+13. `12_rag_persistente.py` — índice Chroma persistente
 
 ### 04_diario_emocoes
 Projeto final: o agente Conversador (A1) de um diário de emoções da Residência em IA. É um "ombro amigo" que registra momentos e consulta o histórico. Não é diagnóstico nem substitui um profissional.

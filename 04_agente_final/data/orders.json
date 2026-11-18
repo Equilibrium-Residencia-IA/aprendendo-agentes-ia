@@ -1,0 +1,16 @@
+{
+  "_comment": "Dados de demonstração. Datas em 'dias atrás' para o exemplo não envelhecer.",
+  "joao": [
+    {"id": "A-1001", "items": ["Caneca personalizada 'João'"], "total": 59.9, "region": "Sul",
+     "shipping": "Econômica", "status": "entregue", "ordered_days_ago": 6, "delivered_days_ago": 2},
+    {"id": "A-1002", "items": ["Fone Bluetooth X2", "Capa de silicone"], "total": 289.0, "region": "Sul",
+     "shipping": "Econômica", "status": "em trânsito", "ordered_days_ago": 3, "delivered_days_ago": null,
+     "tracking": "BR123456789AU"},
+    {"id": "A-0950", "items": ["Teclado mecânico K7"], "total": 420.0, "region": "Sul",
+     "shipping": "Expressa", "status": "entregue", "ordered_days_ago": 40, "delivered_days_ago": 35}
+  ],
+  "maria": [
+    {"id": "B-2001", "items": ["Mochila Urbana"], "total": 199.9, "region": "Nordeste",
+     "shipping": "Expressa", "status": "preparando envio", "ordered_days_ago": 1, "delivered_days_ago": null}
+  ]
+}
