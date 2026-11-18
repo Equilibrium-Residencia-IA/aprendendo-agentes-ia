@@ -11,6 +11,7 @@ Projeto de estudo: construir o mesmo tipo de agente (chat, tools, memória, RAG)
 | 1. Do zero | [01_do_zero/](01_do_zero/) | SDK da Groq (e OpenAI-compatível) puro: loop de chat, tool calling, validação, memória em JSON |
 | 2. LangChain | [02_langchain/](02_langchain/) | Os mesmos conceitos com `ChatGroq`, `@tool` e `create_agent` |
 | 3. LangGraph | [03_langgraph/](03_langgraph/) | Agente como grafo: estado, nós, arestas condicionais, checkpointer, store, embeddings e RAG |
+| 4. Projeto final | [04_diario_emocoes/](04_diario_emocoes/) | Diário de Emoções: agente com tools, classificador de emoções, RAG sobre o próprio histórico e perfil vivo |
 | 4. Agente final | [04_agente_final/](04_agente_final/) | Agente de suporte completo: grafo, memória em SQLite, RAG com Chroma, consulta de pedidos |
 | Interface | [chat/](chat/) | Interface de chat em Next.js (agente 1) |
 | Extra | [colab/](colab/) | Notebook do workshop |
@@ -41,6 +42,29 @@ Cada arquivo evolui o anterior:
 11. `11_rag_citacoes.py` — citações com limiar de similaridade
 12. `12_avaliacao.py` — avaliação da recuperação
 13. `12_rag_persistente.py` — índice Chroma persistente
+
+### 04_diario_emocoes
+Projeto final: o agente Conversador (A1) de um diário de emoções da Residência em IA. É um "ombro amigo" que registra momentos e consulta o histórico. Não é diagnóstico nem substitui um profissional.
+
+1. `schema.py` — o que é uma entrada (`Entrada`), listas fechadas e o mapeamento GoEmotions → Plutchik
+2. `classificador.py` — contrato da rede neural (`detectar_emocoes`); hoje usa um stub de palavras-chave
+3. `armazenamento.py` — Chroma local com busca por similaridade e filtros de data e categoria
+4. `tools.py` — `registrar_momento` (a RN classifica a emoção, não o LLM) e `buscar_memoria`
+5. `agente.py` — `create_agent` com prompt dinâmico (data atual e perfil)
+6. `main.py` — chat no terminal
+7. `avaliacao.py` — `recuperacao` (sem LLM, calibra o limiar) e `comportamento` (conversas roteirizadas com o LLM)
+8. `perfil.py` — perfil vivo reescrito a partir das entradas novas, com validação
+9. `conhecimento.py` — RAG sobre fontes externas (PDFs em `RESOURCES_RAG/`): extração, chunking, coleção Chroma separada do diário e tool `consultar_conhecimento`
+
+Os dados ficam em `04_diario_emocoes/state/` (Chroma e perfil), só no dispositivo e fora do git. O texto das conversas ainda vai para o LLM remoto.
+
+```bash
+python 04_diario_emocoes/conhecimento.py indexar         # (re)indexar os PDFs de RESOURCES_RAG
+python 04_diario_emocoes/conhecimento.py buscar "estresse" # testar a recuperação
+python 04_diario_emocoes/main.py                         # conversar
+python 04_diario_emocoes/avaliacao.py recuperacao        # avaliar a busca
+python 04_diario_emocoes/avaliacao.py comportamento      # avaliar o agente (chama o LLM)
+```
 
 ## Como rodar
 
