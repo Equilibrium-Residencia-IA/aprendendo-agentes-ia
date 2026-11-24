@@ -1,0 +1,64 @@
+{
+  "ct": "CT-M02",
+  "execucao": "hibrida-EX01",
+  "escopo": "nova thread com memoria de evento semeada; NAO testa reinicio do processo",
+  "status_tecnico": "FAIL",
+  "checks": {
+    "base_inicial_vazia": true,
+    "registro_semeado": true,
+    "busca_controle_recupera_registro": true,
+    "buscar_memoria_chamada": true,
+    "memoria_encontrada": false,
+    "memoria_correta": false,
+    "registro_nao_duplicado": true
+  },
+  "conversa": {
+    "mensagem_enviada": "Você se lembra daquele incidente de trânsito que eu contei? O que aconteceu?",
+    "resposta": "Não tenho registro desse incidente no diário. Gostaria de contar novamente o que aconteceu?",
+    "chamadas": [
+      "buscar_memoria"
+    ],
+    "chamadas_detalhadas": [
+      {
+        "nome": "buscar_memoria",
+        "argumentos": {
+          "ate": null,
+          "categoria": null,
+          "consulta": "incidente de trânsito",
+          "desde": null
+        },
+        "id": "fc_867f3c22-35bd-4a1d-ab22-d75484a1c265"
+      }
+    ],
+    "ferramentas": [
+      {
+        "nome": "buscar_memoria",
+        "saida": "Nenhum momento relacionado encontrado no diário.",
+        "id_chamada": "fc_867f3c22-35bd-4a1d-ab22-d75484a1c265"
+      }
+    ]
+  },
+  "consultou_memoria": true,
+  "memoria_encontrada": false,
+  "memoria_correta": null,
+  "utilizou_memoria_na_resposta": null,
+  "registro_semeado": {
+    "id": "f640f466-de93-4134-b876-2e55ac87ab9a",
+    "resumo": "Quase atropelou uma senhora ao voltar do trabalho, freou a tempo e ficou assustado.",
+    "ocorrido_em": "2026-11-21T22:58:10"
+  },
+  "busca_controle": {
+    "recuperou_registro": true,
+    "scores": [
+      1.0
+    ]
+  },
+  "revisao_humana_pendente": [
+    "resposta_recupera_o_evento_correto",
+    "nao_inventa_detalhes",
+    "resposta_coerente_com_registro"
+  ],
+  "executado_em": "2026-11-22T22:58:14-03:00",
+  "commit": "d2782ac",
+  "observacao": "status_tecnico nao representa aprovacao final; exige revisao humana"
+}

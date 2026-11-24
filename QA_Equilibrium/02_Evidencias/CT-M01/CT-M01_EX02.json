@@ -1,0 +1,45 @@
+{
+  "ct": "CT-M01",
+  "execucao": "hibrida-EX02",
+  "status_tecnico": "PASS",
+  "checks": {
+    "base_inicial_vazia": true,
+    "registrar_momento_chamada": true,
+    "um_evento_registrado": true,
+    "trecho_original_igual": true,
+    "data_ontem": true
+  },
+  "conversa": {
+    "mensagem_enviada": "Ontem, quando voltava do trabalho, quase atropelei uma senhora que atravessou a rua de repente. Consegui frear a tempo, mas fiquei muito assustado e passei o restante do dia pensando no que poderia ter acontecido.",
+    "resposta": "Entendo que o susto ficou presente ao longo do dia. Como isso impactou seu humor ou energia nas atividades posteriores?",
+    "chamadas": [
+      "registrar_momento"
+    ],
+    "ferramentas": [
+      {
+        "nome": "registrar_momento",
+        "saida": "Momento registrado no diário."
+      }
+    ]
+  },
+  "registros": [
+    {
+      "id": "04bc51d3-2051-4cfe-9edf-7d2a82ca12dc",
+      "resumo": "Ao retornar do trabalho, quase atropelou uma senhora que atravessou inesperadamente, freou a tempo e ficou assustado.",
+      "ocorrido_em": "2026-11-21T17:00:00",
+      "categoria": "trabalho_estudos",
+      "trecho_original": "Ontem, quando voltava do trabalho, quase atropelei uma senhora que atravessou a rua de repente. Consegui frear a tempo, mas fiquei muito assustado e passei o restante do dia pensando no que poderia ter acontecido."
+    }
+  ],
+  "revisao_humana_pendente": [
+    "fidelidade_do_resumo",
+    "confirmacao_discreta_do_registro",
+    "acolhimento",
+    "ausencia_de_diagnostico",
+    "maximo_uma_pergunta",
+    "ausencia_de_alerta_indevido"
+  ],
+  "executado_em": "2026-11-22T21:19:21-03:00",
+  "commit": "d2782ac",
+  "observacao": "status_tecnico nao representa aprovacao final; exige revisao humana"
+}

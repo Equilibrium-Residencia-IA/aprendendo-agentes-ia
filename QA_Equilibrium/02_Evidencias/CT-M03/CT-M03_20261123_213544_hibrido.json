@@ -1,0 +1,164 @@
+{
+  "ct": "CT-M03",
+  "execucao": "hibrida-EX01",
+  "escopo": "atualizacao de fato estavel em JSON temporario; consulta final em nova thread",
+  "status_tecnico": "PASS",
+  "checks": {
+    "fatos_iniciais_vazios": true,
+    "fato_inicial_registrado": true,
+    "atualizacao_da_mesma_chave": true,
+    "profissao_anterior_nao_atual": true,
+    "profissao_atual_persistida": true,
+    "nenhum_fato_duplicado": true
+  },
+  "conversas": [
+    {
+      "mensagem_enviada": "Sou professora em uma escola.",
+      "resposta": "Entendo, você trabalha como professora em uma escola. Como foi o seu dia de trabalho hoje?",
+      "chamadas": [
+        "lembrar_fato"
+      ],
+      "chamadas_detalhadas": [
+        {
+          "nome": "lembrar_fato",
+          "argumentos": {
+            "chave": "profissao",
+            "valor": "professora em uma escola"
+          },
+          "id": "fc_c8bb090b-2228-4957-a986-3c5b71e72721"
+        }
+      ],
+      "ferramentas": [
+        {
+          "nome": "lembrar_fato",
+          "saida": "Fato guardado.",
+          "id_chamada": "fc_c8bb090b-2228-4957-a986-3c5b71e72721"
+        }
+      ]
+    },
+    {
+      "mensagem_enviada": "Mudei de profissao. Agora sou coordenadora pedagogica.",
+      "resposta": "Registro anotado. Como tem sido a adaptação à nova função de coordenadora pedagógica?",
+      "chamadas": [
+        "lembrar_fato",
+        "lembrar_fato",
+        "registrar_momento",
+        "registrar_momento"
+      ],
+      "chamadas_detalhadas": [
+        {
+          "nome": "lembrar_fato",
+          "argumentos": {
+            "chave": "profissao",
+            "valor": "professora em uma escola"
+          },
+          "id": "fc_c8bb090b-2228-4957-a986-3c5b71e72721"
+        },
+        {
+          "nome": "lembrar_fato",
+          "argumentos": {
+            "chave": "profissao",
+            "valor": "coordenadora pedagógica"
+          },
+          "id": "fc_7921d39b-ed17-4863-acec-9bc0aec31f44"
+        },
+        {
+          "nome": "registrar_momento",
+          "argumentos": {
+            "categoria": "trabalho_estudos",
+            "envolve_conflito": false,
+            "ocorrido_em": "2026-11-23T21:35:00",
+            "resumo": "Mudou de profissão para coordenadora pedagógica.",
+            "trecho_original": "Mudei de profissao. Agora sou coordenadora pedagogica."
+          },
+          "id": "fc_848a98fd-1ea7-45a4-b135-3062075c8143"
+        },
+        {
+          "nome": "registrar_momento",
+          "argumentos": {
+            "categoria": "trabalho_estudos",
+            "envolve_conflito": false,
+            "ocorrido_em": "2026-11-23T21:30:00",
+            "resumo": "Mudou de profissão para coordenadora pedagógica.",
+            "trecho_original": "Mudei de profissao. Agora sou coordenadora pedagogica."
+          },
+          "id": "fc_7a4a7f3b-e22c-4121-9dcf-313a7066b658"
+        }
+      ],
+      "ferramentas": [
+        {
+          "nome": "lembrar_fato",
+          "saida": "Fato guardado.",
+          "id_chamada": "fc_c8bb090b-2228-4957-a986-3c5b71e72721"
+        },
+        {
+          "nome": "lembrar_fato",
+          "saida": "Fato guardado.",
+          "id_chamada": "fc_7921d39b-ed17-4863-acec-9bc0aec31f44"
+        },
+        {
+          "nome": "registrar_momento",
+          "saida": "Erro: ocorrido_em está no futuro (2026-11-23T21:35:00). Confira a data atual. Nada foi registrado; corrija os argumentos e tente de novo.",
+          "id_chamada": "fc_848a98fd-1ea7-45a4-b135-3062075c8143"
+        },
+        {
+          "nome": "registrar_momento",
+          "saida": "Momento registrado no diário.",
+          "id_chamada": "fc_7a4a7f3b-e22c-4121-9dcf-313a7066b658"
+        }
+      ]
+    },
+    {
+      "mensagem_enviada": "Qual e minha profissao atual?",
+      "resposta": "Sua profissão atual é coordenadora pedagógica.",
+      "chamadas": [],
+      "chamadas_detalhadas": [],
+      "ferramentas": []
+    }
+  ],
+  "consultou_memoria": false,
+  "memoria_encontrada": null,
+  "memoria_correta": null,
+  "utilizou_memoria_na_resposta": null,
+  "consulta_memoria_por_turno": [
+    {
+      "consultou_memoria": false,
+      "memoria_encontrada": null,
+      "memoria_correta": null,
+      "utilizou_memoria_na_resposta": null
+    },
+    {
+      "consultou_memoria": false,
+      "memoria_encontrada": null,
+      "memoria_correta": null,
+      "utilizou_memoria_na_resposta": null
+    },
+    {
+      "consultou_memoria": false,
+      "memoria_encontrada": null,
+      "memoria_correta": null,
+      "utilizou_memoria_na_resposta": null
+    }
+  ],
+  "estado_fatos": {
+    "antes": {},
+    "depois_primeira": {
+      "profissao": "professora em uma escola"
+    },
+    "depois_atualizacao": {
+      "profissao": "coordenadora pedagógica"
+    },
+    "depois_nova_thread": {
+      "profissao": "coordenadora pedagógica"
+    }
+  },
+  "revisao_humana_pendente": [
+    "resposta_final_informa_profissao_atual",
+    "nao_apresenta_profissao_anterior_como_atual",
+    "nao_inventa_informacoes",
+    "adequacao_conversacional"
+  ],
+  "executado_em": "2026-11-23T21:35:44-03:00",
+  "commit": "d2782ac",
+  "observacao": "status_tecnico nao representa aprovacao final; exige revisao humana"
+}

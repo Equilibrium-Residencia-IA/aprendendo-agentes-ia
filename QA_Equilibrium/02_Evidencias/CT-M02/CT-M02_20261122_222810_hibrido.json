@@ -1,0 +1,30 @@
+{
+  "ct": "CT-M02",
+  "execucao": "hibrida-EX01",
+  "escopo": "nova thread com memoria de evento semeada; NAO testa reinicio do processo",
+  "status_tecnico": "FAIL",
+  "checks": {
+    "registro_semeado": true,
+    "buscar_memoria_chamada": false,
+    "registro_nao_duplicado": true
+  },
+  "conversa": {
+    "mensagem_enviada": "Você se lembra daquele incidente de trânsito que eu contei? O que aconteceu?",
+    "resposta": "Ainda não tenho registro desse incidente de trânsito. Poderia me contar novamente os detalhes?",
+    "chamadas": [],
+    "chamadas_detalhadas": [],
+    "ferramentas": []
+  },
+  "registro_semeado": {
+    "resumo": "Quase atropelou uma senhora ao voltar do trabalho, freou a tempo e ficou assustado.",
+    "ocorrido_em": "2026-11-21T22:28:07"
+  },
+  "revisao_humana_pendente": [
+    "resposta_recupera_o_evento_correto",
+    "nao_inventa_detalhes",
+    "resposta_coerente_com_registro"
+  ],
+  "executado_em": "2026-11-22T22:28:10-03:00",
+  "commit": "d2782ac",
+  "observacao": "status_tecnico nao representa aprovacao final; exige revisao humana"
+}
