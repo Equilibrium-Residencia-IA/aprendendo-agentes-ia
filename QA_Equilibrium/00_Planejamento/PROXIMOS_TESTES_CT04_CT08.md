@@ -1,19 +1,19 @@
-# Planejamento preliminar — próximos testes (CT04 a CT08)
+# Planejamento preliminar — próximos testes (CT-M04 a CT-M08)
 
 **Projeto:** Equilibrium — Second Challenge  
 **Sistema sob teste:** Agente A1 — Diário de Emoções (`04_diario_emocoes/`)  
 **Situação:** Propostas de escopo; **não executados**  
 **Referência:** catálogo existente no `QA_MESTRE.md`  
 
-Este documento apresenta os próximos cenários previstos e sua relevância para a qualidade do produto. Os procedimentos, massas de teste, critérios de aceitação e verificações automatizadas serão detalhados antes da execução de cada CT. A numeração CT04–CT08 indica a sequência de execução proposta; os IDs por frente seguem o catálogo existente.
+Este documento apresenta os próximos cenários previstos e sua relevância para a qualidade do produto. Os procedimentos, massas de teste, critérios de aceitação e verificações automatizadas serão detalhados antes da execução de cada CT. A numeração oficial dos casos é CT-M04 a CT-M08, em continuidade aos três primeiros testes. A frente de avaliação permanece identificada separadamente.
 
-| Sequência | ID no catálogo | Teste previsto | Escopo preliminar | Por que é importante |
+| ID do CT | Frente | Teste previsto | Escopo preliminar | Por que é importante |
 |---|---|---|---|---|
-| **CT04** | **CT-A01** | Resposta a relato cotidiano | Enviar um relato fictício simples do dia a dia e verificar adequação da resposta, reconhecimento do contexto, limite de uma pergunta, uso pertinente de ferramentas e ausência de diagnósticos ou inferências indevidas. | Avaliar a qualidade básica da interação e a aderência do agente ao seu papel. |
-| **CT05** | **CT-A02** | Dois acontecimentos em uma mensagem | Enviar uma mensagem fictícia com dois acontecimentos distintos; avaliar se ambos são reconhecidos e, quando aplicável, registrados separadamente, sem omissões nem duplicações. | Verificar cobertura de informações e consistência entre conversa e persistência. |
-| **CT06** | **CT-R01** | Recuperação sem repetir palavras originais | Preparar um acontecimento conhecido e solicitar sua recuperação com uma paráfrase ou descrição indireta; conferir consulta à memória, argumentos, pontuação, evento recuperado e fidelidade da resposta. | Avaliar robustez da busca semântica diante de variações de linguagem, incluindo a limitação observada no CT-M02. |
-| **CT07** | **CT-R02** | Resposta conceitual fundamentada nos PDFs | Fazer pergunta fictícia sobre emoção, estresse ou bem-estar; verificar chamada de `consultar_conhecimento`, trechos/fontes recuperados, fidelidade à fonte, indicação de origem e ausência de extrapolação clínica. | Avaliar se o RAG de conhecimento oferece respostas rastreáveis e fundamentadas. |
-| **CT08** | **CT-S01** | Situação de risco e interrupção do fluxo normal | Simular, exclusivamente como massa fictícia, uma mensagem que exige aplicação do protocolo de risco; verificar orientação apropriada, ausência de diagnóstico, não aprofundamento indevido e ausência de registro do acontecimento nesse turno. | Avaliar os limites de segurança previstos no prompt para situações sensíveis. |
+| **CT-M04** | **Agente** | Resposta a relato cotidiano | Enviar um relato fictício simples do dia a dia e verificar adequação da resposta, reconhecimento do contexto, limite de uma pergunta, uso pertinente de ferramentas e ausência de diagnósticos ou inferências indevidas. | Avaliar a qualidade básica da interação e a aderência do agente ao seu papel. |
+| **CT-M05** | **Agente** | Dois acontecimentos em uma mensagem | Enviar uma mensagem fictícia com dois acontecimentos distintos; avaliar se ambos são reconhecidos e, quando aplicável, registrados separadamente, sem omissões nem duplicações. | Verificar cobertura de informações e consistência entre conversa e persistência. |
+| **CT-M06** | **Memória / recuperação** | Recuperação sem repetir palavras originais | Preparar um acontecimento conhecido e solicitar sua recuperação com uma paráfrase ou descrição indireta; conferir consulta à memória, argumentos, pontuação, evento recuperado e fidelidade da resposta. | Avaliar robustez da busca semântica diante de variações de linguagem, incluindo a limitação observada no CT-M02. |
+| **CT-M07** | **RAG de conhecimento** | Resposta conceitual fundamentada nos PDFs | Fazer pergunta fictícia sobre emoção, estresse ou bem-estar; verificar chamada de `consultar_conhecimento`, trechos/fontes recuperados, fidelidade à fonte, indicação de origem e ausência de extrapolação clínica. | Avaliar se o RAG de conhecimento oferece respostas rastreáveis e fundamentadas. |
+| **CT-M08** | **Segurança** | Situação de risco e interrupção do fluxo normal | Simular, exclusivamente como massa fictícia, uma mensagem que exige aplicação do protocolo de risco; verificar orientação apropriada, ausência de diagnóstico, não aprofundamento indevido e ausência de registro do acontecimento nesse turno. | Avaliar os limites de segurança previstos no prompt para situações sensíveis. |
 
 ## Critérios transversais previstos
 

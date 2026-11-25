@@ -1,9 +1,12 @@
-"""Execução híbrida experimental do Diário de Emoções (CT-M01 / CT-M02 / CT-M03).
+"""Execução híbrida experimental do Diário de Emoções (CT-M01 / CT-M02 / CT-M03 / CT-M04 / CT-M05 / CT-M06).
 
 Executar da raiz do repositório aprendendo-agentes-ia:
  python QA_Equilibrium/03_Automacao/testes_hibridos.py --ct M01
  python QA_Equilibrium/03_Automacao/testes_hibridos.py --ct M02
  python QA_Equilibrium/03_Automacao/testes_hibridos.py --ct M03
+ python QA_Equilibrium/03_Automacao/testes_hibridos.py --ct M04
+ python QA_Equilibrium/03_Automacao/testes_hibridos.py --ct M05
+ python QA_Equilibrium/03_Automacao/testes_hibridos.py --ct M06
 
 Usa apenas dados fictícios, coleção temporária de eventos e uma thread nova por CT.
 M02 verifica recuperação a partir de uma memória semeada, não reinício do processo.
@@ -213,9 +216,218 @@ def ct_m03(agente, tools, armazenamento, colecao, fatos, pasta_fatos):
                                    'nao_inventa_informacoes', 'adequacao_conversacional'],
     }
 
+def ct_m04(agente, tools, armazenamento, colecao):
+    """CT-M04: relato cotidiano; criterios semanticos ficam para revisao humana.
+
+    Verifica exclusivamente requisitos observaveis em estruturas: estado inicial,
+    ferramenta de registro, integridade do relato e ausencia de duplicacao.
+    A adequacao da resposta nao pode ser inferida dessas verificacoes.
+    """
+    relato = (
+        'Hoje, depois do almoco, fiz uma caminhada de meia hora no parque. '
+        'Foi agradavel e me senti tranquilo.'
+    )
+    antes = colecao.count()
+    conversa = conversar(agente, relato)
+    registros = armazenamento.listar(colecao)
+    depois = colecao.count()
+    novos = registros if antes == 0 else []
+    chamadas_registro = [c for c in conversa['chamadas_detalhadas']
+                         if c['nome'] == 'registrar_momento']
+    hoje = datetime.now().date().isoformat()
+    checks = {
+        'base_inicial_vazia': antes == 0,
+        'registrar_momento_chamada': bool(chamadas_registro),
+        'um_evento_persistido': depois - antes == 1,
+        'trecho_original_preservado': len(novos) == 1 and novos[0]['trecho_original'] == relato,
+        'data_hoje': len(novos) == 1 and novos[0]['ocorrido_em'][:10] == hoje,
+    }
+    return {
+        'ct': 'CT-M04',
+        'execucao': 'hibrida-EX01',
+        'objetivo': 'Avaliar a resposta a relato cotidiano e o registro do acontecimento',
+        'status_tecnico': 'PASS' if all(checks.values()) else 'FAIL',
+        'checks': checks,
+        'conversa': conversa,
+        **avaliar_consulta_memoria(conversa),
+        'estado_eventos': {'antes': antes, 'depois': depois},
+        'registros': [
+            {'id': x['id'], 'resumo': x['resumo'], 'categoria': x['categoria'],
+             'ocorrido_em': x['ocorrido_em'], 'trecho_original': x['trecho_original']}
+            for x in novos
+        ],
+        'revisao_humana_pendente': [
+            'reconhece_caminhada_e_sentimento_informado',
+            'acolhimento_profissional_sem_exagero',
+            'no_maximo_uma_pergunta',
+            'ausencia_de_diagnostico_e_emocoes_inventadas',
+            'registro_confirmado_discretamente',
+            'resumo_e_categoria_coerentes',
+            'sem_alerta_de_crise_indevido',
+        ],
+    }
+
+
+
+def ct_m05(agente, tools, armazenamento, colecao):
+    """Dois acontecimentos em uma mensagem; valida registros efetivos, não apenas tool calls."""
+    relato = (
+        'Hoje de manhã, recebi uma notícia muito boa no trabalho: fui escolhida para '
+        'participar de um projeto novo e fiquei muito feliz. Mais tarde, quando cheguei '
+        'em casa, descobri que meu cachorro estava doente e fiquei preocupada.'
+    )
+    antes = colecao.count()
+    conversa = conversar(agente, relato)
+    depois = colecao.count()
+    registros = armazenamento.listar(colecao)
+    novos = registros if antes == 0 else []
+    chamadas_registro = [x for x in conversa['chamadas_detalhadas']
+                         if x['nome'] == 'registrar_momento']
+    retornos_registro = [x for x in conversa['ferramentas']
+                        if x['nome'] == 'registrar_momento']
+    sucessos = sum('Momento registrado no diário.' in x['saida'] for x in retornos_registro)
+    hoje = datetime.now().date().isoformat()
+    # A ferramenta pode preservar a mensagem inteira ou o trecho de cada acontecimento.
+    # Não impor segmentação literal; isso será avaliado com o resumo na revisão humana.
+    originais_presentes = all(bool(x['trecho_original'].strip()) and
+                             x['trecho_original'] in relato for x in novos)
+    checks = {
+        'base_inicial_vazia': antes == 0,
+        'registrar_momento_chamada': bool(chamadas_registro),
+        'dois_eventos_persistidos': depois - antes == 2,
+        'dois_registros_distintos': len(novos) == 2 and
+            len({x['id'] for x in novos}) == 2 and
+            len({x['resumo'].strip().casefold() for x in novos}) == 2,
+        'trechos_originais_presentes_no_relato': len(novos) == 2 and originais_presentes,
+        'data_hoje_em_ambos': len(novos) == 2 and
+            all(x['ocorrido_em'][:10] == hoje for x in novos),
+    }
+    return {
+        'ct': 'CT-M05', 'execucao': 'hibrida-EX01',
+        'objetivo': 'Registrar separadamente dois acontecimentos descritos em uma mensagem',
+        'status_tecnico': 'PASS' if all(checks.values()) else 'FAIL',
+        'checks': checks, 'conversa': conversa,
+        **avaliar_consulta_memoria(conversa),
+        'estado_eventos': {'antes': antes, 'depois': depois},
+        'chamadas_registrar_momento': len(chamadas_registro),
+        'retornos_registro_bem_sucedidos': sucessos,
+        'registros': [
+            {'id': x['id'], 'resumo': x['resumo'], 'categoria': x['categoria'],
+             'ocorrido_em': x['ocorrido_em'], 'trecho_original': x['trecho_original']}
+            for x in novos
+        ],
+        'revisao_humana_pendente': [
+            'registro_evento_projeto_trabalho', 'registro_evento_cachorro_doente',
+            'dois_resumos_sem_mistura_ou_omissao', 'categorias_adequadas',
+            'reconhece_os_dois_assuntos_na_resposta', 'maximo_uma_pergunta',
+            'confirmacao_discreta_de_registro_vigente',
+            'ausencia_de_inferencia_emocional_ou_diagnostico',
+        ],
+    }
+
+
+def ct_m06(agente, tools, armazenamento, colecao):
+    """Recuperação semântica: duas paráfrases em threads novas e memória controlada.
+
+    Não aprova por mera chamada da ferramenta. O evento deve ser recuperado
+    efetivamente em cada tentativa; a fidelidade da resposta exige revisão humana.
+    """
+    antes = colecao.count()
+    momento = datetime.now().replace(microsecond=0)
+    resumo = 'Quase atropelou uma senhora ao voltar do trabalho, freou a tempo e ficou assustado.'
+    entrada = {
+        'id': str(uuid4()),
+        'registrado_em': momento.isoformat(),
+        'ocorrido_em': (momento - timedelta(days=1)).isoformat(),
+        'resumo': resumo,
+        'trecho_original': RELATO,
+        'categoria': 'outro',
+        'envolve_conflito': False,
+        'emocoes': [],
+    }
+    armazenamento.gravar(colecao, entrada)
+    apos_semeadura = colecao.count()
+    # Controle positivo: a memória precisa ser recuperável pelo mecanismo do produto
+    # antes de avaliarmos as diferentes formulações do usuário.
+    controle = armazenamento.buscar(colecao, resumo)
+    controle_ok = any(item['id'] == entrada['id'] for item, _ in controle)
+
+    perguntas = [
+        'Você lembra quando precisei frear bruscamente porque uma pedestre surgiu na minha frente? O que aconteceu?',
+        'Você recorda aquele susto que levei dirigindo na volta para casa? Pode me lembrar do episódio?',
+    ]
+    tentativas = []
+    for indice, pergunta in enumerate(perguntas, 1):
+        # conversar() inicia nova thread a cada chamada, portanto nenhuma
+        # tentativa depende do histórico conversacional da anterior.
+        conversa = conversar(agente, pergunta)
+        memoria = avaliar_consulta_memoria(conversa, resumo)
+        chamadas_busca = [c for c in conversa['chamadas_detalhadas']
+                          if c['nome'] == 'buscar_memoria']
+        diagnosticos = []
+        for chamada in chamadas_busca:
+            argumentos = chamada.get('argumentos', {})
+            consulta_real = argumentos.get('consulta')
+            if not isinstance(consulta_real, str) or not consulta_real.strip():
+                diagnosticos.append({'consulta': consulta_real, 'score_bruto': None,
+                                     'acima_do_limiar': None, 'motivo': 'consulta_ausente'})
+                continue
+            # Diagnóstico adicional sem alterar MIN_SCORE do produto: usa
+            # o mesmo embedding para inspecionar a pontuação antes do filtro.
+            achados_sem_limiar = armazenamento.buscar(
+                colecao, consulta_real, min_score=-1.0,
+                desde=None, ate=None, categoria=None,
+            )
+            score = next((score for item, score in achados_sem_limiar
+                          if item['id'] == entrada['id']), None)
+            diagnosticos.append({
+                'consulta': consulta_real,
+                'score_bruto': round(score, 4) if score is not None else None,
+                'acima_do_limiar': score >= armazenamento.MIN_SCORE if score is not None else None,
+                'nota': 'Pontuação diagnóstica SEM filtros. Conferir os argumentos reais da tool.',
+            })
+        tentativas.append({
+            'tentativa': indice,
+            'conversa': conversa,
+            **memoria,
+            'consulta_diagnostica': diagnosticos,
+        })
+
+    depois = colecao.count()
+    checks = {
+        'base_inicial_vazia': antes == 0,
+        'registro_semeado': apos_semeadura - antes == 1,
+        'busca_controle_recupera_registro': controle_ok,
+        'consultou_memoria_nas_duas': all(t['consultou_memoria'] for t in tentativas),
+        'memoria_encontrada_nas_duas': all(t['memoria_encontrada'] is True for t in tentativas),
+        'memoria_correta_nas_duas': all(t['memoria_correta'] is True for t in tentativas),
+        'registro_nao_duplicado': depois == apos_semeadura,
+    }
+    return {
+        'ct': 'CT-M06',
+        'execucao': 'hibrida-EX01',
+        'objetivo': 'Recuperar a mesma memória usando duas formulações diferentes',
+        'status_tecnico': 'PASS' if all(checks.values()) else 'FAIL',
+        'checks': checks,
+        'consultou_memoria': any(t['consultou_memoria'] for t in tentativas),
+        'memoria_encontrada': all(t['memoria_encontrada'] is True for t in tentativas),
+        'memoria_correta': all(t['memoria_correta'] is True for t in tentativas),
+        'utilizou_memoria_na_resposta': None,
+        'tentativas': tentativas,
+        'registro_semeado': {'id': entrada['id'], 'resumo': resumo,
+                             'categoria': entrada['categoria'], 'ocorrido_em': entrada['ocorrido_em']},
+        'estado_eventos': {'antes': antes, 'apos_semeadura': apos_semeadura, 'depois': depois},
+        'limiar_similaridade': armazenamento.MIN_SCORE,
+        'revisao_humana_pendente': [
+            'respostas_usam_memoria_corretamente', 'ausencia_de_fatos_inventados',
+            'adequacao_das_respostas', 'limites_de_recuperacao_semantica',
+        ],
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ct', choices=['M01', 'M02', 'M03'], required=True)
+    parser.add_argument('--ct', choices=['M01', 'M02', 'M03', 'M04', 'M05', 'M06'], required=True)
     parser.add_argument('--verificar', action='store_true', help='Somente confere ambiente, sem chamar Groq')
     args = parser.parse_args()
     confirmar_ambiente()
@@ -238,6 +450,12 @@ def main():
                 resultado = ct_m01(modulo_agente.agente, tools, armazenamento, colecao)
             elif args.ct == 'M02':
                 resultado = ct_m02(modulo_agente.agente, tools, armazenamento, colecao)
+            elif args.ct == 'M04':
+                resultado = ct_m04(modulo_agente.agente, tools, armazenamento, colecao)
+            elif args.ct == 'M05':
+                resultado = ct_m05(modulo_agente.agente, tools, armazenamento, colecao)
+            elif args.ct == 'M06':
+                resultado = ct_m06(modulo_agente.agente, tools, armazenamento, colecao)
             else:
                 import fatos
                 pasta_fatos = Path(pasta) / 'fatos_isolados'
@@ -281,6 +499,13 @@ def main():
             print(f'Turno {i} | tools:', ', '.join(turno['chamadas']) or '(nenhuma)')
             print(f'Turno {i} | resposta:', turno['resposta'])
         print('Fatos apos atualizacao:', resultado['estado_fatos']['depois_atualizacao'])
+    elif 'tentativas' in resultado:
+        for tentativa in resultado['tentativas']:
+            conversa = tentativa['conversa']
+            print(f"Tentativa {tentativa['tentativa']} | consultou memoria: {tentativa['consultou_memoria']} | encontrada: {tentativa['memoria_encontrada']} | correta: {tentativa['memoria_correta']}")
+            print('  Consulta:', [c.get('argumentos', {}).get('consulta') for c in conversa['chamadas_detalhadas'] if c['nome'] == 'buscar_memoria'])
+            print('  Resposta:', conversa['resposta'])
+            print('  Diagnostico:', tentativa['consulta_diagnostica'])
     else:
         print('Tools chamadas:', ', '.join(resultado['conversa']['chamadas']) or '(nenhuma)')
         print('Resposta:', resultado['conversa']['resposta'])

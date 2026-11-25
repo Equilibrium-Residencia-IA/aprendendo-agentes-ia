@@ -2,54 +2,60 @@
 
 **Sistema sob teste:** Agente A1 — Diário de Emoções  
 **Repositório:** https://github.com/Equilibrium-Residencia-IA/aprendendo-agentes-ia  
-**Pasta de referência:** `04_diario_emocoes/`  
-**Versão/commit de referência:** `d2782ac` (hash abreviado)  
-**Responsável pelos testes:** _preencher_  
-**Última revisão do documento:** 2026-11-23  
-**Situação:** Preparação concluída; CT-M01 e CT-M02 reprovados; CT-M03 aprovado com pontos de investigação; demais CTs pendentes
+**Código do produto:** `04_diario_emocoes/`  
+**Documentação QA:** `QA_Equilibrium/`  
+**Branch de contribuição:** `qa/ct-m01-m03-marcia` (atualizável com os CTs seguintes)  
+**Revisão:** 25/11/2026  
+**Situação:** seis CTs concluídos; dois aprovados, quatro reprovados e dois planejados.
 
-## 1. Objetivo
+## 1. Objetivo e escopo
 
-Avaliar o comportamento conversacional do A1, o registro e a recuperação de memórias, o uso da base de conhecimento/RAG e os limites de segurança e ética, com entradas fictícias e evidências rastreáveis. Distinguir **resposta exibida**, **ferramenta chamada**, **registro persistido** e **informação recuperada**.
+Avaliar o comportamento conversacional do Agente A1, o registro e recuperação de memórias, o uso da base documental/RAG e os limites de segurança. Distinguir **chamada de ferramenta**, **retorno da ferramenta**, **dado persistido** e **resposta ao usuário**. As massas usadas nos CTs são fictícias.
 
-## 2. Escopo atual
+**Fora do escopo até aqui:** acurácia da rede neural definitiva de classificação de emoções (o classificador provisório não serve como referência de precisão), A2/downstream e alteração do código do produto para corrigir defeitos.
 
-- **Agente (CT-A):** respostas contextualizadas, uso correto de ferramentas, limites conversacionais.
-- **Memórias (CT-M):** registro de eventos, fatos estáveis, persistência, recuperação e não duplicação.
-- **RAG (CT-R):** recuperação semântica do diário e da base de PDFs, fontes, relevância e ausência de extrapolação.
-- **Segurança (CT-S):** risco, privacidade, não diagnóstico e respeito aos limites de apoio emocional.
+## 2. Indicadores consolidados
 
-**Fora do escopo inicial:** medir a acurácia da rede neural definitiva de emoções enquanto o classificador provisório estiver ativo; avaliar o A2/downstream; alterar o código-fonte do sistema sob teste.
+| Indicador | Quantidade |
+|---|---:|
+| CTs planejados | 8 |
+| CTs concluídos (ao menos uma execução avaliada) | 6 |
+| Aprovados globalmente | **2** (CT-M03 e CT-M06) |
+| Reprovados globalmente | **4** (CT-M01, CT-M02, CT-M04 e CT-M05) |
+| Ainda não executados | **2** (CT-M07 e CT-M08) |
+| Execuções manuais / híbridas | CT-M01: EX01 manual e EX02 híbrida; demais CTs executados em modo híbrido |
 
-## 3. Ambiente e rastreabilidade
+**Interpretação:** `PASS` técnico não equivale à aprovação global. A conclusão global é determinada com os critérios técnicos **e** a revisão humana. Achados recorrentes não são contabilizados como defeitos distintos apenas por aparecerem em CTs diferentes. Não há confirmação de tickets externos abertos.
 
-| Campo | Registro |
+## 3. Catálogo oficial de casos de teste
+
+| ID | Frente | Objetivo | Resultado global | Documento |
+|---|---|---|---|---|
+| **CT-M01** | Memória / conversa | Registrar acontecimento marcante e confirmar discretamente | **REPROVADO** — registro confirmado no banco, sem confirmação ao usuário | [CT-M01](01_Casos_de_Testes/CT-M01.md) |
+| **CT-M02** | Memória | Recuperar acontecimento em nova *thread* | **REPROVADO** — registro disponível, porém não recuperado na consulta do agente | [CT-M02](01_Casos_de_Testes/CT-M02.md) |
+| **CT-M03** | Fatos estáveis | Atualizar profissão e recuperá-la em nova *thread* | **APROVADO** — fato atualizado sem contradição, com observações adicionais | [CT-M03](01_Casos_de_Testes/CT-M03.md) |
+| **CT-M04** | Conversa / registro | Responder a relato cotidiano e registrar o acontecimento | **REPROVADO** — sem confirmação conversacional do registro | [CT-M04](01_Casos_de_Testes/CT-M04.md) |
+| **CT-M05** | Conversa / registro | Separar dois acontecimentos em uma mensagem | **REPROVADO** — dois registros corretos, sem confirmação ao usuário | [CT-M05](01_Casos_de_Testes/CT-M05.md) |
+| **CT-M06** | Recuperação semântica | Recuperar a mesma memória com duas formulações diferentes | **APROVADO** — duas recuperações corretas | [CT-M06](01_Casos_de_Testes/CT-M06.md) |
+| **CT-M07** | RAG documental | Resposta conceitual fundamentada nos PDFs | **PLANEJADO** | [Planejamento](00_Planejamento/PROXIMOS_TESTES_CT04_CT08.md) |
+| **CT-M08** | Segurança | Situação de risco emocional; interrupção do fluxo normal | **PLANEJADO** | [Planejamento](00_Planejamento/PROXIMOS_TESTES_CT04_CT08.md) |
+
+**Nomenclatura:** os identificadores oficiais são sequenciais `CT-M01` a `CT-M08`; as frentes temáticas permanecem independentes do prefixo do CT.
+
+## 4. Ambiente e preparação
+
+| Item | Estado registrado |
 |---|---|
-| Data/hora da preparação | 18 e 21/11/2026 (horário local); EX01 em 21/11 |
-| Sistema operacional | Windows; VS Code / PowerShell |
-| Python / ambiente virtual | Python 3.12; `.venv` ativo |
-| Branch e hash do commit | `main` / `d2782ac` (abreviado) |
-| Comando de execução | `python 04_diario_emocoes/main.py` |
-| Base de dados / perfil de teste | ChromaDB local em `04_diario_emocoes/state/chroma`; coleção `entradas` com 0 eventos antes da EX01; coleção `conhecimento` com 582 chunks. EX02 utilizou coleção temporária inicialmente vazia, com verificação automatizada. Utilizar exclusivamente dados fictícios. |
-| Modelo LLM / parâmetros | `openai/gpt-oss-120b`, temperatura 0.6 (configuração do código analisado; primeira resposta conversacional obtida em EX01) |
-| Versões relevantes das dependências | `pip check` sem inconsistências antes da atualização; `pypdf==7.1.1` instalado após o pull; demais versões a registrar quando necessário. |
-| Evidências da execução | `02_Evidencias/<ID>/` (prints da EX01 e JSON validado da EX02) |
+| Ambiente | Windows, VS Code, PowerShell, Python 3.12 e `.venv` |
+| Agente | LangChain/LangGraph com Groq; modelo `openai/gpt-oss-120b`, temperatura 0,6, segundo código examinado |
+| Diário | ChromaDB, coleção `entradas`; isolamento temporário nos testes híbridos de eventos |
+| Fatos estáveis | `fatos.json`; isolamento temporário específico no CT-M03 |
+| Base documental | Seis fontes indexadas, **582 chunks** verificados na preparação |
+| Proteção de credenciais | `.env` ignorado no Git; não versionar chaves, bancos locais ou perfis reais |
 
-### 3.1. Checklist de preparação — 21/11/2026
+### Recursos documentais indexados na preparação
 
-| Verificação | Resultado observado | Situação |
-|---|---|---|
-| Atualização do repositório | `git pull --ff-only`: `707b187..d2782ac`, fast-forward, 16 commits recebidos, sem conflitos reportados | Concluída |
-| Ambiente virtual e dependências | `.venv` ativo; atualização instalou `pypdf-7.1.1` | Concluída |
-| Configuração da API | Variável `GROQ_API_KEY` localizada pelo Python; `git check-ignore .env` retornou `.env` | Configurada; primeira interação concluída sem erro aparente |
-| Recursos documentais | Seis PDFs e `FONTES_E_LINKS.md` presentes localmente, conforme inventário de recursos | Confirmada presença por nomes visíveis |
-| Indexação do RAG | Seis fontes e 582 chunks confirmados diretamente no ChromaDB | Concluída |
-| Inicialização do A1 | Saudação inicial e prompt `Você:` exibidos sem erro aparente | Concluída |
-| Pré-condição CT-M01 | Consulta direta à coleção `entradas`: `Total de eventos: 0` | Atendida |
-
-### 3.2. Inventário do RAG de conhecimento
-
-| Fonte (`fonte_id`) | Chunks |
+| Fonte | Chunks |
 |---|---:|
 | SCHERER_2005 | 176 |
 | OPAS_ESTRESSE | 124 |
@@ -59,105 +65,77 @@ Avaliar o comportamento conversacional do A1, o registro e a recuperação de me
 | BIG5_MARCADORES_2012 | 66 |
 | **Total** | **582** |
 
-A consulta direta ao banco confirmou a presença das seis fontes indexadas, sem divergência de cobertura em relação ao inventário de recursos. A presença dos chunks não comprova a qualidade da recuperação semântica ou a fidelidade das respostas do agente.
+A indexação comprova disponibilidade dos documentos, não fidelidade de recuperação ou qualidade de respostas. A avaliação específica da base de conhecimento está prevista no CT-M07.
 
-### 3.3. Evidências de preparação
+## 5. Metodologia e estrutura documental
 
-| ID | Evidência | Resultado demonstrado |
-|---|---|---|
-| ENV-E01 | [ENV_E01_Indexacao_RAG.png](02_Evidencias/00_Preparacao_Ambiente/ENV_E01_Indexacao_RAG.png) | Execução da indexação e listagem dos recursos locais |
-| ENV-E02 | [ENV_E02_Consulta_ChromaDB.png](02_Evidencias/00_Preparacao_Ambiente/ENV_E02_Consulta_ChromaDB.png) | 582 chunks distribuídos em seis fontes |
-| ENV-E03 | [ENV_E03_Inicializacao_Agente.png](02_Evidencias/00_Preparacao_Ambiente/ENV_E03_Inicializacao_Agente.png) | Inicialização e saudação fixa do A1; não comprova chamada ao LLM |
-| ENV-E04 | [ENV_E04_Base_Eventos_Vazia.png](02_Evidencias/00_Preparacao_Ambiente/ENV_E04_Base_Eventos_Vazia.png) | Coleção de eventos com zero registros antes do CT-M01 |
+1. **Preparação:** definir objetivo, massa fictícia, pré-condições e resultados esperados antes de executar. Sempre que pertinente, comprovar banco inicialmente vazio e ambiente isolado.
+2. **Automação Python:** verificar fatos determinísticos, inclusive as **saídas** de tools, persistência e identidade de registros; produzir JSON com entradas, parâmetros, resultados, estado inicial/final e metadados da execução.
+3. **Avaliação humana:** conferir interpretação semântica, tom, limites do prompt, qualidade dos resumos e se a resposta utilizou corretamente a memória; separar não conformidades de hipóteses e pontos a esclarecer.
+4. **Conclusão:** registrar resultado global objetivo no Markdown de cada CT. `FAIL`/`PASS` da automação não substitui a análise interpretativa.
+5. **Rastreabilidade:** preservar JSON por execução e print apenas quando complementar; usar caminhos relativos no Markdown. O `QA_MESTRE.md` agrega status e achados, sem duplicar os relatórios individuais.
 
-## 4. Catálogo de CTs
+**Convenção de artefatos:** `01_Casos_de_Testes/CT-M0x.md` (relatório único por CT); `02_Evidencias/CT-M0x/` (JSON gerado e captura, quando aplicável); `03_Automacao/testes_hibridos.py`; `04_Relatorios/` reservado a sínteses transversais, quando necessárias.
 
-| ID | Frente | Título | Status | Documento | Defeito |
+**Campos de memória nos JSONs:** `consultou_memoria`, `memoria_encontrada`, `memoria_correta` e `utilizou_memoria_na_resposta`. Valor `null` significa não avaliado ou não aplicável, e não aprovação nem reprovação automática. Chamadas de ferramentas e suas saídas devem ser diferenciadas.
+
+**Padrão textual de conclusão:** **Resultado EX0x: APROVADO/REPROVADO — motivo determinante e comportamento observado**. Orientações impessoais nos encaminhamentos: investigar, definir, validar, corrigir e reavaliar; não atribuir ações a integrantes nominalmente. Alterações discutidas, mas não implementadas, não modificam os critérios vigentes.
+
+## 6. Síntese das execuções homologadas
+
+| CT | Data | Commit de produto (JSON) | Resultado técnico | Resultado global | Evidência principal |
 |---|---|---|---|---|---|
-| CT-A01 | Agente | Resposta a relato cotidiano | Não executado | A detalhar | — |
-| CT-A02 | Agente | Dois acontecimentos em uma mensagem | Não executado | A detalhar | — |
-| CT-M01 | Memória | Registro de acontecimento marcante | Reprovado (EX01 e EX02) | [CT-M01](01_Casos_de_Testes/CT-M01.md) | ACH-001; ACH-002/003 em análise |
-| CT-M02 | Memória | Recuperação em nova conversa | **Reprovado (EX01 híbrida)** | [CT-M02](01_Casos_de_Testes/CT-M02.md) | ACH-M02-001; ACH-M02-002 (automação corrigida); ACH-M02-003 |
-| CT-M03 | Memória | Atualização de fato pessoal estável | **Aprovado (EX01 híbrida), com pontos de investigação** | [CT-M03](01_Casos_de_Testes/CT-M03.md) | ACH-M03-001; ACH-M03-002 (investigar) |
-| CT-R01 | RAG | Recuperação sem repetir palavras originais | Não executado | A detalhar | — |
-| CT-R02 | RAG | Resposta conceitual baseada nos PDFs | Não executado | A detalhar | — |
-| CT-S01 | Segurança | Situação de risco e interrupção do fluxo normal | Não executado | A detalhar | — |
+| CT-M01 | 21–22/11 | `d2782ac` | EX02 **5/5 PASS** | **REPROVADO** | [CT-M01](01_Casos_de_Testes/CT-M01.md) |
+| CT-M02 | 22/11 | `d2782ac` | Execução final **5 PASS / 2 FAIL** | **REPROVADO** | [CT-M02](01_Casos_de_Testes/CT-M02.md) |
+| CT-M03 | 23/11 | `d2782ac` | **6/6 PASS** | **APROVADO** | [CT-M03](01_Casos_de_Testes/CT-M03.md) |
+| CT-M04 | 25/11 | `98ff24b` | **5/5 PASS** | **REPROVADO** | [CT-M04](01_Casos_de_Testes/CT-M04.md) |
+| CT-M05 | 25/11 | `98ff24b` | **6/6 PASS** | **REPROVADO** | [CT-M05](01_Casos_de_Testes/CT-M05.md) |
+| CT-M06 | 25/11 | `98ff24b` | **7/7 PASS** | **APROVADO** | [CT-M06](01_Casos_de_Testes/CT-M06.md) |
 
-## 5. Padrão de execução e evidência
+### CT-M01 — Registro de acontecimento marcante
 
-Para cada CT, concentrar a análise e a conclusão em `01_Casos_de_Testes/CT-<ID>.md`, sem criar relatório individual duplicado. Registrar: **objetivo, referência ao comportamento esperado, pré-condições, massa de teste, passos, resultados esperados, resultados obtidos, evidências, status, observações e defeitos relacionados**.
+EX01 manual e EX02 híbrida comprovaram persistência, fidelidade do trecho original e data relativa. Ambas evidenciaram ausência de **confirmação discreta do registro** na resposta ao usuário, descumprindo a instrução do prompt vigente. Horário atribuído sem informação explícita e omissões potencialmente relevantes no resumo permanecem em avaliação.
 
-A automação grava um JSON por execução em `02_Evidencias/<ID>/`. O `QA_MESTRE.md` registra apenas indicadores, status e links; `04_Relatorios/` fica reservado a sínteses consolidadas. Prints são opcionais e devem acrescentar informação.
+### CT-M02 — Recuperação em nova *thread*
 
-As respostas livres da IA podem variar. Não exigir uma frase literal, exceto quando isso constituir requisito. Analisar semanticamente os critérios e repetir execuções quando apropriado; registrar cada tentativa de forma independente. A execução automatizada não substitui a revisão humana de comportamento sensível.
+O registro foi semeado e recuperado por busca-controle, mas não recuperado pela consulta do agente. Na investigação, a consulta genérica `incidente de trânsito` apresentou similaridade **0,2167**, abaixo do limiar **0,35**; uma consulta específica ao acontecimento apresentou **0,8440**. O primeiro script gerava `PASS` indevido por verificar apenas chamada da tool; a validação foi corrigida para exigir recuperação efetiva. **O escopo não incluiu reinício completo do processo Python.**
 
-**Níveis de evidência:**
+### CT-M03 — Atualização de fato pessoal
 
-1. **Interface/terminal:** o que o usuário viu.
-2. **Ferramentas (tools):** o que foi chamado e com quais argumentos (sem dados sensíveis).
-3. **Persistência:** registros efetivos no ChromaDB ou no mecanismo correspondente.
-4. **Recuperação:** documentos/eventos recuperados, scores, filtros e, quando houver, traces.
+O agente atualizou `profissao` de professora para coordenadora pedagógica sem manter o valor antigo como atual, e informou corretamente a profissão em outra *thread*. Chamadas registradas no histórico não equivalem automaticamente a novas gravações. Foram observadas duas tentativas distintas de `registrar_momento` durante a atualização: uma rejeitada por horário futuro e outra concluída; avaliar a pertinência desse registro adicional e o tratamento do horário.
 
-## 6. Registro de sessões
+### CT-M04 — Resposta a relato cotidiano
 
-| Sessão | Data | Commit | CTs | Resumo | Evidências |
-|---|---|---|---|---|---|
-| ENV-01 | 21/11/2026 | `d2782ac` | Nenhum | Preparação do ambiente concluída; CT-M01 pronto para iniciar | ENV-E01 a ENV-E04 |
-| EX01 (manual) | 21/11/2026 | `d2782ac` | CT-M01 | Evento registrado; confirmação conversacional ausente; horário e resumo em investigação | E01, E02, E04, E05 |
-| EX02 (híbrida, validada) | 22/11/2026 | `d2782ac` | CT-M01 | Cinco verificações técnicas aprovadas; revisão humana identificou novamente a ausência de confirmação | [JSON EX02](02_Evidencias/CT-M01/CT-M01_EX02.json) |
-| EX01 (híbrida, validada) | 22/11/2026 | `d2782ac` | CT-M02 | Script corrigido: 5 critérios aprovados, 2 reprovados; memória disponível na busca-controle, não recuperada pelo agente; resultado global reprovado | [CT-M02](01_Casos_de_Testes/CT-M02.md) |
+A caminhada foi registrada com integridade e resposta pertinente, mas faltou confirmação ao usuário (**não conformidade recorrente**). A ferramenta recusou a primeira tentativa devido a horário futuro; o agente corrigiu o argumento e conseguiu gravar um único evento. **A recuperação após erro é comportamento positivo**, sem validar a hora exata atribuída ao momento.
 
-| EX01 (híbrida, validada) | 23/11/2026 | `d2782ac` | CT-M03 | Atualização e recuperação de profissão em nova *thread*; 6/6 critérios PASS; chamadas adicionais sob investigação | [CT-M03](01_Casos_de_Testes/CT-M03.md) |
+### CT-M05 — Dois acontecimentos em uma mensagem
 
-## 7. Pontos a confirmar nas próximas execuções
+Os eventos de novo projeto e cachorro doente foram separados e persistidos em dois registros distintos, ambos com trechos originais preservados. A resposta reconheceu os dois temas, mas não confirmou os registros (**não conformidade recorrente**). Investigar horas exatas atribuídas sem informação explícita, categoria `corpo_saude` para doença do animal e omissão da felicidade declarada no resumo do projeto.
 
-- Base local de eventos vazia confirmada em EX01 e base temporária vazia comprovada em EX02; avaliar isolamento de perfil/fatos e reinicialização segura para os próximos CTs. Consulta direta ao ChromaDB já validada.
-- Arquivo de entrada, branch e commit de referência identificados; capturar chamadas e argumentos das tools em execuções futuras; primeira resposta do LLM observada.
-- Para CTs de RAG, estabelecer registros/documentos esperados (*ground truth*) e critérios para considerar a recuperação relevante.
-- Para cenários de segurança, usar dados fictícios; validar critérios de aceitação de segurança.
+### CT-M06 — Recuperação com palavras diferentes
 
-## 8. Registro de defeitos e decisões
+Em duas novas consultas, o agente chamou `buscar_memoria`, recuperou o mesmo evento correto e utilizou seu conteúdo nas respostas. Similaridades diagnósticas **0,3967** e **0,3973**, ambas acima do limiar **0,35**. O resultado é positivo para essas duas formulações; uma bateria mais ampla é necessária antes de generalizar a robustez da recuperação semântica.
 
-Documentar cada problema confirmado em `03_Defeitos/`; não classificar divergências sem evidências suficientes como defeitos definitivos. Decisões de escopo e mudanças de critérios devem ser registradas aqui com data e responsável.
+## 7. Registro consolidado de achados e acompanhamento
 
-
-### Decisões registradas em 21/11/2026
-
-- Escopo restrito ao Diário de Emoções (`04_diario_emocoes`); exercícios didáticos excluídos.
-- Abordagem híbrida adotada: coleta e verificações técnicas em Python; avaliação conversacional documentada no próprio CT; Phoenix permanece como ferramenta candidata.
-- Documentação em Markdown, com referências relativas às evidências.
-- EX01 manual e EX02 híbrida do CT-M01 concluídas; manter a memória da EX01 sem exclusões. CT-M02 executado após correção dos critérios de recuperação; resultado funcional reprovado.
-
-## 9. Consolidação — CT-M01 (EX01 e EX02, 21–22/11/2026)
-
-**Indicadores:** 8 CTs planejados; 3 CTs executados (CT-M01, CT-M02 e CT-M03); 1 aprovado; 2 reprovados; 5 não executados; 1 não conformidade observada, 2 pontos a esclarecer/investigar; 0 tickets de defeito abertos.
-
-| ID | Achado | Situação |
+| ID / tema | Ocorrência | Classificação e próximo passo |
 |---|---|---|
-| ACH-001 | Agente não confirmou o registro, apesar de um evento gravado | Não conformidade observada com o prompt; investigar e corrigir a ausência de confirmação |
-| ACH-002 | Data correta, mas atribuição de 17h sem horário fornecido | Definir tratamento de horário desconhecido |
-| ACH-003 | Resumo preserva núcleo, mas omite a preocupação prolongada em ambas as execuções; a travessia repentina foi omitida na EX01 | Avaliar relevância e impacto na recuperação, ainda não medido |
+| **ACH-001 — Confirmação discreta ausente** | CT-M01, M04, M05 | **Não conformidade recorrente ao prompt vigente.** Reavaliar após eventual alteração implementada e versionada; não encerrar apenas porque a mudança está em discussão. |
+| **ACH-002 — Horário atribuído sem evidência** | CT-M01, M03, M04, M05 | **Investigação de regra temporal:** definir representação de horário não informado ou aproximado, sem falsa precisão. |
+| **ACH-003 — Preservação semântica de resumos** | CT-M01 e M05 | **Avaliação de qualidade:** investigar omissão de detalhes emocionalmente relevantes e impacto na recuperação. |
+| **ACH-M02 — Recuperação semântica insuficiente para consulta genérica** | CT-M02 | **Falha funcional observada:** estudar formulação da consulta, limiar e recuperação sem alterar parâmetros sem evidência representativa. |
+| **ACH-M02 — Falso PASS inicial da automação** | CT-M02 | **Instrumentação QA corrigida:** validar retorno efetivo e identidade da memória; manter histórico de tentativas. |
+| **ACH-M03 — Chamadas adicionais / momento associado à mudança de profissão** | CT-M03 | **Investigação:** separar histórico de tool calls de operações realmente executadas e avaliar pertinência da gravação. |
+| **ACH-M04 — Recuperação após erro** | CT-M04 | **Comportamento positivo:** erro por horário futuro seguido de correção e registro sem duplicação; preservar como alvo de regressão. |
+| **ACH-M05 — Categoria do evento com animal** | CT-M05 | **Critério a definir:** avaliar `corpo_saude` para saúde de animal; esquema não contém categoria específica para animais. |
+| **ACH-M06 — Proximidade do limiar** | CT-M06 | **Observação:** duas paráfrases passaram com margem limitada; ampliar consultas antes de concluir sobre robustez. |
 
-Na EX01, o banco passou de 0 para 1 evento e o relato original foi preservado; categoria `outro`, conflito `false` e classificação provisória `fear` (0.8). Não houve captura direta das tools. Na EX02, cinco verificações automáticas passaram, com base temporária inicialmente vazia e chamada de `registrar_momento` capturada. A revisão humana constatou novamente ausência de confirmação, além de omissão da preocupação persistente no resumo. A categoria `trabalho_estudos` aplicada na EX02 é uma observação a investigar, sem diagnóstico de defeito. O evento da EX01 permanece como massa de teste possível para CT-M02.
+Este consolidado registra **temas** e não substitui os IDs individuais de achados nos relatórios de cada CT. Divergências ainda em investigação não devem ser apresentadas como defeitos confirmados. Até a revisão, não há informação comprovada sobre abertura de tickets externos.
 
+## 8. Próximos passos
 
-Detalhamento da execução e evidências: [CT-M01](01_Casos_de_Testes/CT-M01.md).
-
-## 10. Consolidação — CT-M02 (22/11/2026)
-
-**Resultado EX01: REPROVADO** — A memória previamente semeada estava disponível na busca-controle, porém a consulta do agente não recuperou o acontecimento. O script corrigido registrou `FAIL` nas verificações de memória encontrada e memória correta, impedindo aprovação indevida apenas pela chamada da ferramenta.
-
-**Instrumentação:** registrar `consultou_memoria` em todas as execuções, distinguir memória encontrada e memória correta e preservar argumentos das ferramentas para análise. O uso correto da memória na resposta requer análise semântica e não é inferido apenas da chamada.
-
-**Encaminhamentos:** investigar estratégias de consulta semântica e o limiar com consultas representativas; preservar a distinção entre falha de recuperação e causa definitiva. O escopo contempla nova *thread* com base temporária, não reinício do processo.
-
-Detalhamento, evidências e histórico diagnóstico: [CT-M02](01_Casos_de_Testes/CT-M02.md).
-
-
-## 11. Consolidação — CT-M03 (23/11/2026)
-
-**Resultado EX01: APROVADO** — O fato pessoal foi registrado e atualizado na mesma chave (`profissao`) e a informação vigente, `coordenadora pedagógica`, foi utilizada corretamente em nova *thread*. A verificação técnica registrou 6/6 critérios aprovados; o isolamento utilizou armazenamento temporário.
-
-**Pontos de investigação:** a captura do segundo turno contém chamada histórica de `lembrar_fato` com ID já registrado no primeiro turno; ajustar a instrumentação para evitar duplicações de histórico. Houve duas tentativas de `registrar_momento` (uma rejeitada como futura e uma aceita); avaliar a atribuição de horário e a pertinência do registro como acontecimento. `consultou_memoria=false` é esperado para fatos estáveis disponibilizados pelo prompt; não se exige busca no diário.
-
-Detalhamento e evidências: [CT-M03](01_Casos_de_Testes/CT-M03.md).
+- **CT-M07:** avaliar consultas conceituais ao RAG de PDFs, referências às fontes, limites de validade e ausência de extrapolação indevida.
+- **CT-M08:** avaliar resposta a situação fictícia de risco emocional, interrupção do fluxo normal e não persistência do relato no mesmo turno, conforme prompt vigente.
+- Consolidar decisões sobre confirmação do registro, tratamento de horários sem precisão e categorias de acontecimentos; revisar critérios após alterações efetivamente implementadas.
+- Manter testes reproduzíveis em ambiente isolado; documentar limitações de amostra e variabilidade do LLM.
+- Atualizar a branch de QA com resultados versionados, sem fazer merge automático na `main`.

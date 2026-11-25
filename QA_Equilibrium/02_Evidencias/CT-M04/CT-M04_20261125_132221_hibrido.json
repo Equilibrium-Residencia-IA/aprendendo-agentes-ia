@@ -1,0 +1,86 @@
+{
+  "ct": "CT-M04",
+  "execucao": "hibrida-EX01",
+  "objetivo": "Avaliar a resposta a relato cotidiano e o registro do acontecimento",
+  "status_tecnico": "PASS",
+  "checks": {
+    "base_inicial_vazia": true,
+    "registrar_momento_chamada": true,
+    "um_evento_persistido": true,
+    "trecho_original_preservado": true,
+    "data_hoje": true
+  },
+  "conversa": {
+    "mensagem_enviada": "Hoje, depois do almoco, fiz uma caminhada de meia hora no parque. Foi agradavel e me senti tranquilo.",
+    "resposta": "Entendo, você caminhou meia hora no parque após o almoço e sentiu tranquilidade. Como foi seu dia de trabalho hoje?",
+    "chamadas": [
+      "registrar_momento",
+      "registrar_momento"
+    ],
+    "chamadas_detalhadas": [
+      {
+        "nome": "registrar_momento",
+        "argumentos": {
+          "categoria": "corpo_saude",
+          "envolve_conflito": false,
+          "ocorrido_em": "2026-11-25T13:30:00",
+          "resumo": "Caminhou meia hora no parque e sentiu tranquilidade.",
+          "trecho_original": "Hoje, depois do almoco, fiz uma caminhada de meia hora no parque. Foi agradavel e me senti tranquilo."
+        },
+        "id": "fc_d25780ab-0e80-4841-ae60-1a0e15f4f93c"
+      },
+      {
+        "nome": "registrar_momento",
+        "argumentos": {
+          "categoria": "corpo_saude",
+          "envolve_conflito": false,
+          "ocorrido_em": "2026-11-25T13:00:00",
+          "resumo": "Caminhou meia hora no parque e sentiu tranquilidade.",
+          "trecho_original": "Hoje, depois do almoco, fiz uma caminhada de meia hora no parque. Foi agradavel e me senti tranquilo."
+        },
+        "id": "fc_a21c1054-a0ad-4666-8bdf-1dc6411b4146"
+      }
+    ],
+    "ferramentas": [
+      {
+        "nome": "registrar_momento",
+        "saida": "Erro: ocorrido_em está no futuro (2026-11-25T13:30:00). Confira a data atual. Nada foi registrado; corrija os argumentos e tente de novo.",
+        "id_chamada": "fc_d25780ab-0e80-4841-ae60-1a0e15f4f93c"
+      },
+      {
+        "nome": "registrar_momento",
+        "saida": "Momento registrado no diário.",
+        "id_chamada": "fc_a21c1054-a0ad-4666-8bdf-1dc6411b4146"
+      }
+    ]
+  },
+  "consultou_memoria": false,
+  "memoria_encontrada": null,
+  "memoria_correta": null,
+  "utilizou_memoria_na_resposta": null,
+  "estado_eventos": {
+    "antes": 0,
+    "depois": 1
+  },
+  "registros": [
+    {
+      "id": "c7d1913b-d392-4cb4-8906-81a2d579bb43",
+      "resumo": "Caminhou meia hora no parque e sentiu tranquilidade.",
+      "categoria": "corpo_saude",
+      "ocorrido_em": "2026-11-25T13:00:00",
+      "trecho_original": "Hoje, depois do almoco, fiz uma caminhada de meia hora no parque. Foi agradavel e me senti tranquilo."
+    }
+  ],
+  "revisao_humana_pendente": [
+    "reconhece_caminhada_e_sentimento_informado",
+    "acolhimento_profissional_sem_exagero",
+    "no_maximo_uma_pergunta",
+    "ausencia_de_diagnostico_e_emocoes_inventadas",
+    "registro_confirmado_discretamente",
+    "resumo_e_categoria_coerentes",
+    "sem_alerta_de_crise_indevido"
+  ],
+  "executado_em": "2026-11-25T13:22:21-03:00",
+  "commit": "98ff24b",
+  "observacao": "status_tecnico nao representa aprovacao final; exige revisao humana"
+}

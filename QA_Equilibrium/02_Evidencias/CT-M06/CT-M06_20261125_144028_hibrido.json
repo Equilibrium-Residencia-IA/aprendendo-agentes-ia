@@ -1,0 +1,121 @@
+{
+  "ct": "CT-M06",
+  "execucao": "hibrida-EX01",
+  "objetivo": "Recuperar a mesma memória usando duas formulações diferentes",
+  "status_tecnico": "PASS",
+  "checks": {
+    "base_inicial_vazia": true,
+    "registro_semeado": true,
+    "busca_controle_recupera_registro": true,
+    "consultou_memoria_nas_duas": true,
+    "memoria_encontrada_nas_duas": true,
+    "memoria_correta_nas_duas": true,
+    "registro_nao_duplicado": true
+  },
+  "consultou_memoria": true,
+  "memoria_encontrada": true,
+  "memoria_correta": true,
+  "utilizou_memoria_na_resposta": null,
+  "tentativas": [
+    {
+      "tentativa": 1,
+      "conversa": {
+        "mensagem_enviada": "Você lembra quando precisei frear bruscamente porque uma pedestre surgiu na minha frente? O que aconteceu?",
+        "resposta": "Você precisou frear bruscamente quando uma pedestre surgiu à sua frente, quase a atropelou, mas conseguiu parar a tempo, ficando assustado. Como você se sentiu depois desse episódio?",
+        "chamadas": [
+          "buscar_memoria"
+        ],
+        "chamadas_detalhadas": [
+          {
+            "nome": "buscar_memoria",
+            "argumentos": {
+              "consulta": "frear bruscamente pedestre"
+            },
+            "id": "fc_76e9f615-f220-471b-914b-e18eb07e02bb"
+          }
+        ],
+        "ferramentas": [
+          {
+            "nome": "buscar_memoria",
+            "saida": "- 2026-11-24 [outro] Quase atropelou uma senhora ao voltar do trabalho, freou a tempo e ficou assustado.\n  Emoções (classificação automática, pode errar): nenhuma | relevância 0.40",
+            "id_chamada": "fc_76e9f615-f220-471b-914b-e18eb07e02bb"
+          }
+        ]
+      },
+      "consultou_memoria": true,
+      "memoria_encontrada": true,
+      "memoria_correta": true,
+      "utilizou_memoria_na_resposta": null,
+      "consulta_diagnostica": [
+        {
+          "consulta": "frear bruscamente pedestre",
+          "score_bruto": 0.3967,
+          "acima_do_limiar": true,
+          "nota": "Pontuação diagnóstica SEM filtros. Conferir os argumentos reais da tool."
+        }
+      ]
+    },
+    {
+      "tentativa": 2,
+      "conversa": {
+        "mensagem_enviada": "Você recorda aquele susto que levei dirigindo na volta para casa? Pode me lembrar do episódio?",
+        "resposta": "Na volta para casa, você quase atropelou uma senhora, freou a tempo e ficou assustado.  \nComo você tem lidado com esse sentimento desde então?",
+        "chamadas": [
+          "buscar_memoria"
+        ],
+        "chamadas_detalhadas": [
+          {
+            "nome": "buscar_memoria",
+            "argumentos": {
+              "ate": null,
+              "categoria": null,
+              "consulta": "susto dirigindo na volta para casa",
+              "desde": null
+            },
+            "id": "fc_eba4ae60-2def-4f54-be50-9eb8d100a615"
+          }
+        ],
+        "ferramentas": [
+          {
+            "nome": "buscar_memoria",
+            "saida": "- 2026-11-24 [outro] Quase atropelou uma senhora ao voltar do trabalho, freou a tempo e ficou assustado.\n  Emoções (classificação automática, pode errar): nenhuma | relevância 0.40",
+            "id_chamada": "fc_eba4ae60-2def-4f54-be50-9eb8d100a615"
+          }
+        ]
+      },
+      "consultou_memoria": true,
+      "memoria_encontrada": true,
+      "memoria_correta": true,
+      "utilizou_memoria_na_resposta": null,
+      "consulta_diagnostica": [
+        {
+          "consulta": "susto dirigindo na volta para casa",
+          "score_bruto": 0.3973,
+          "acima_do_limiar": true,
+          "nota": "Pontuação diagnóstica SEM filtros. Conferir os argumentos reais da tool."
+        }
+      ]
+    }
+  ],
+  "registro_semeado": {
+    "id": "ca015d78-a6e5-40b4-a17e-1c8822b18c8c",
+    "resumo": "Quase atropelou uma senhora ao voltar do trabalho, freou a tempo e ficou assustado.",
+    "categoria": "outro",
+    "ocorrido_em": "2026-11-24T14:40:21"
+  },
+  "estado_eventos": {
+    "antes": 0,
+    "apos_semeadura": 1,
+    "depois": 1
+  },
+  "limiar_similaridade": 0.35,
+  "revisao_humana_pendente": [
+    "respostas_usam_memoria_corretamente",
+    "ausencia_de_fatos_inventados",
+    "adequacao_das_respostas",
+    "limites_de_recuperacao_semantica"
+  ],
+  "executado_em": "2026-11-25T14:40:28-03:00",
+  "commit": "98ff24b",
+  "observacao": "status_tecnico nao representa aprovacao final; exige revisao humana"
+}

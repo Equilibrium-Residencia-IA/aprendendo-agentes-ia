@@ -1,0 +1,97 @@
+{
+  "ct": "CT-M05",
+  "execucao": "hibrida-EX01",
+  "objetivo": "Registrar separadamente dois acontecimentos descritos em uma mensagem",
+  "status_tecnico": "PASS",
+  "checks": {
+    "base_inicial_vazia": true,
+    "registrar_momento_chamada": true,
+    "dois_eventos_persistidos": true,
+    "dois_registros_distintos": true,
+    "trechos_originais_presentes_no_relato": true,
+    "data_hoje_em_ambos": true
+  },
+  "conversa": {
+    "mensagem_enviada": "Hoje de manhã, recebi uma notícia muito boa no trabalho: fui escolhida para participar de um projeto novo e fiquei muito feliz. Mais tarde, quando cheguei em casa, descobri que meu cachorro estava doente e fiquei preocupada.",
+    "resposta": "Entendo a alegria pela novidade no trabalho e a preocupação com seu cachorro. Como você tem equilibrado esses sentimentos ao longo do dia?",
+    "chamadas": [
+      "registrar_momento",
+      "registrar_momento"
+    ],
+    "chamadas_detalhadas": [
+      {
+        "nome": "registrar_momento",
+        "argumentos": {
+          "categoria": "trabalho_estudos",
+          "envolve_conflito": false,
+          "ocorrido_em": "2026-11-25T08:00:00",
+          "resumo": "Foi escolhida para participar de um projeto novo no trabalho.",
+          "trecho_original": "Hoje de manhã, recebi uma notícia muito boa no trabalho: fui escolhida para participar de um projeto novo e fiquei muito feliz."
+        },
+        "id": "fc_8e6fa90c-34f1-4336-b83e-ef0a3cc311bd"
+      },
+      {
+        "nome": "registrar_momento",
+        "argumentos": {
+          "categoria": "corpo_saude",
+          "envolve_conflito": false,
+          "ocorrido_em": "2026-11-25T14:00:00",
+          "resumo": "Descobriu que seu cachorro estava doente, gerando preocupação.",
+          "trecho_original": "Mais tarde, quando cheguei em casa, descobri que meu cachorro estava doente e fiquei preocupada."
+        },
+        "id": "fc_34503636-81f9-447d-b5e1-b4576106fc3a"
+      }
+    ],
+    "ferramentas": [
+      {
+        "nome": "registrar_momento",
+        "saida": "Momento registrado no diário.",
+        "id_chamada": "fc_8e6fa90c-34f1-4336-b83e-ef0a3cc311bd"
+      },
+      {
+        "nome": "registrar_momento",
+        "saida": "Momento registrado no diário.",
+        "id_chamada": "fc_34503636-81f9-447d-b5e1-b4576106fc3a"
+      }
+    ]
+  },
+  "consultou_memoria": false,
+  "memoria_encontrada": null,
+  "memoria_correta": null,
+  "utilizou_memoria_na_resposta": null,
+  "estado_eventos": {
+    "antes": 0,
+    "depois": 2
+  },
+  "chamadas_registrar_momento": 2,
+  "retornos_registro_bem_sucedidos": 2,
+  "registros": [
+    {
+      "id": "da06530f-b8a6-4fb1-980a-eb73055a718e",
+      "resumo": "Foi escolhida para participar de um projeto novo no trabalho.",
+      "categoria": "trabalho_estudos",
+      "ocorrido_em": "2026-11-25T08:00:00",
+      "trecho_original": "Hoje de manhã, recebi uma notícia muito boa no trabalho: fui escolhida para participar de um projeto novo e fiquei muito feliz."
+    },
+    {
+      "id": "4a4b75db-afdf-46d7-8d81-f023e3f49a8e",
+      "resumo": "Descobriu que seu cachorro estava doente, gerando preocupação.",
+      "categoria": "corpo_saude",
+      "ocorrido_em": "2026-11-25T14:00:00",
+      "trecho_original": "Mais tarde, quando cheguei em casa, descobri que meu cachorro estava doente e fiquei preocupada."
+    }
+  ],
+  "revisao_humana_pendente": [
+    "registro_evento_projeto_trabalho",
+    "registro_evento_cachorro_doente",
+    "dois_resumos_sem_mistura_ou_omissao",
+    "categorias_adequadas",
+    "reconhece_os_dois_assuntos_na_resposta",
+    "maximo_uma_pergunta",
+    "confirmacao_discreta_de_registro_vigente",
+    "ausencia_de_inferencia_emocional_ou_diagnostico"
+  ],
+  "executado_em": "2026-11-25T14:19:47-03:00",
+  "commit": "98ff24b",
+  "observacao": "status_tecnico nao representa aprovacao final; exige revisao humana"
+}
